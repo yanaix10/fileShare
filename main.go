@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	maxUploadSize = 50 << 20 // 50 MB
+	maxUploadSize = 60 << 20 // 60 MB
 	fileTTL       = 5 * time.Minute
 )
 
@@ -78,7 +78,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Enforce 50 MB limit
+	// Enforce 60 MB limit
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
 
 	rawName := r.Header.Get("X-File-Name")
@@ -111,7 +111,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	if _, err := io.Copy(outFile, r.Body); err != nil {
 		outFile.Close()
 		_ = os.Remove(savePath)
-		http.Error(w, "Upload failed or exceeded 50MB limit", http.StatusRequestEntityTooLarge)
+		http.Error(w, "Upload failed or exceeded 60MB limit", http.StatusRequestEntityTooLarge)
 		return
 	}
 	outFile.Close()

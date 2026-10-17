@@ -13,7 +13,7 @@ No accounts. No app installation. Files burn immediately upon download or after 
 - ⏱️ **5-Minute Auto-Expiry**: Background cleanup ticker runs every 30 seconds to wipe any unclaimed files.
 - 🔒 **Optional Passkey Protection (`AUTH_KEY`)**: Protect your personal instance against spam or strangers using an environment variable. QR codes automatically inherit the passkey so phone users never have to type it!
 - 📦 **Zero External Go Dependencies**: Built purely with the standard library (`net/http`, `crypto/rand`, `sync`, etc.).
-- 🚀 **Ephemeral & Container-Friendly**: Runs on minimal RAM (<15 MB) and streams chunks directly to disk with a 50 MB limit.
+- 🚀 **Ephemeral & Container-Friendly**: Runs on minimal RAM (<15 MB) and streams chunks directly to disk with a 60 MB limit.
 
 ---
 
@@ -24,7 +24,7 @@ No accounts. No app installation. Files burn immediately upon download or after 
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/fileShare.git
+git clone https://github.com/yanaix10/fileShare.git
 cd fileShare
 
 # 2. Run the server
