@@ -1,0 +1,16 @@
+# Binaries
+server
+*.exe
+*.o
+*.a
+*.so
+
+# Ephemeral uploads
+uploads/*
+!uploads/.gitkeep
+
+# IDE & OS
+.vscode/
+.DS_Store
+*.swp
+*~

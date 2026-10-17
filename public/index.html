@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fileShare</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f7f2;
+            color: #111827;
+            line-height: 1.5;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: #4b5563;
+            margin-bottom: 24px;
+        }
+
+        .instructions-box {
+            background-color: #ffffff;
+            border: 1px solid #bbf7d0;
+            border-left: 4px solid #16a34a;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 32px;
+            text-align: left;
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .instructions-box strong {
+            color: #111827;
+        }
+
+        .instructions-box ol {
+            padding-left: 20px;
+            margin-top: 6px;
+        }
+
+        .instructions-box li {
+            margin-bottom: 4px;
+        }
+
+        .grid {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: #14532d;
+            border: 1px solid #166534;
+            border-radius: 10px;
+            padding: 24px;
+            width: 340px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 14px rgba(20, 83, 45, 0.15);
+            color: #ffffff;
+        }
+
+        .card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #ffffff;
+        }
+
+        .card p {
+            font-size: 13px;
+            color: #bbf7d0;
+            margin-bottom: 16px;
+        }
+
+        .qr-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 200px;
+            height: 200px;
+            margin: 14px auto;
+            background: #ffffff;
+            border: 2px solid #86efac;
+            border-radius: 8px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        input[type="file"] {
+            font-size: 13px;
+            color: #374151;
+            margin: 10px 0;
+            max-width: 100%;
+        }
+
+        button {
+            background-color: #ffffff;
+            color: #14532d;
+            border: 1px solid #ffffff;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.15s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .status {
+            margin-top: 14px;
+            font-size: 13px;
+            color: #d1fae5;
+            line-height: 1.4;
+        }
+
+        .file-upload-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            margin: 12px 0 8px;
+            width: 100%;
+        }
+
+        .custom-file-btn {
+            display: inline-block;
+            background-color: #ffffff;
+            color: #14532d;
+            border: 1px solid #86efac;
+            border-radius: 6px;
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s;
+        }
+
+        .custom-file-btn:hover {
+            background-color: #f0fdf4;
+            border-color: #4ade80;
+        }
+
+        .file-chosen-text {
+            font-size: 13px;
+            color: #bbf7d0;
+            max-width: 280px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: center;
+            display: block;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>fileShare</h1>
+        <p class="subtitle">Quick file sharing between your computer and phone</p>
+
+        <!-- Instructions Box -->
+        <div class="instructions-box">
+            <strong>How to use:</strong>
+            <ol>
+                <li><strong>Receive a file:</strong> Scan the QR code under "Receive File" with your phone camera, then select and upload the file from your phone. Click the "Download File" button when it appears to save it to this computer.</li>
+                <li><strong>Send a file:</strong> Select a file under "Send File" and click "Generate Send QR". Scan that QR code with your phone to download it.</li>
+                <li><strong>Auto-delete:</strong> Files are automatically deleted from the server immediately after download or after 5 minutes.</li>
+            </ol>
+        </div>
+
+        <!-- Desktop View -->
+        <div id="desktop-view" class="grid">
+            <!-- Card 1: Receive from Phone -->
+            <div class="card">
+                <h2>Receive File</h2>
+                <p>Scan with your phone camera to send a file to this computer</p>
+                <div id="receive-qr" class="qr-box"></div>
+                <div id="receive-status" class="status">Waiting for phone upload...</div>
+            </div>
+
+            <!-- Card 2: Send to Phone -->
+            <div class="card">
+                <h2>Send File</h2>
+                <p>Upload a file here to generate a download QR for your phone</p>
+                <div class="file-upload-wrapper">
+                    <label for="pcFileInput" class="custom-file-btn">Choose File</label>
+                    <input type="file" id="pcFileInput" class="hidden">
+                    <span id="pcFileName" class="file-chosen-text">No file chosen</span>
+                </div>
+                <button onclick="uploadFromPC()">Generate Send QR</button>
+                <div id="send-qr" class="qr-box hidden"></div>
+                <div id="send-status" class="status"></div>
+            </div>
+        </div>
+
+        <!-- Mobile View (Shown only after scanning the Receive QR code) -->
+        <div id="mobile-upload-view" class="card hidden" style="margin: 0 auto; width: 100%; max-width: 400px;">
+            <h2>Upload to Computer</h2>
+            <p id="mobile-pin-label"></p>
+            <div class="file-upload-wrapper">
+                <label for="mobileFileInput" class="custom-file-btn">Choose File</label>
+                <input type="file" id="mobileFileInput" class="hidden">
+                <span id="mobileFileName" class="file-chosen-text">No file chosen</span>
+            </div>
+            <button onclick="uploadFromMobile()">Upload File</button>
+            <div id="mobile-status" class="status"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

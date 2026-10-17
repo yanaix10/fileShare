@@ -1,0 +1,9 @@
+build/
+uploads/*
+!uploads/.gitkeep
+.git/
+.vscode/
+include/
+src/
+*.o
+server
