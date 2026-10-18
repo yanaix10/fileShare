@@ -130,11 +130,6 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func statusHandler(w http.ResponseWriter, r *http.Request) {
-	if !isAuthorized(r) {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
 	pin := r.URL.Path[len("/api/status/"):]
 	mu.Lock()
 	entry, exists := fileMap[pin]

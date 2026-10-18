@@ -2,13 +2,27 @@ const params = new URLSearchParams(window.location.search);
 const action = params.get('action');
 const sessionPin = params.get('pin');
 
-// Authentication key handling (inherited from URL or localStorage)
-let currentAuthKey = params.get('auth') || localStorage.getItem('fileShare_auth') || '';
-if (params.get('auth')) {
-    localStorage.setItem('fileShare_auth', params.get('auth'));
+let isAuthRequired = false;
+
+// Check if server requires an auth key
+async function checkAuthConfig() {
+    try {
+        const res = await fetch('/api/config');
+        if (res.ok) {
+            const config = await res.json();
+            isAuthRequired = !!config.authRequired;
+        }
+    } catch (e) {}
 }
 
-// Generate a random 4-character alphanumeric PIN on the client
+// Prompt for auth key every time an action is taken (no persistent storage)
+function getAuthKey(actionName) {
+    if (!isAuthRequired) return '';
+    const key = prompt(`Website is protected. Please enter the Auth Key to ${actionName}:`);
+    return key ? key.trim() : null;
+}
+
+// Generate a random 4-character alphanumeric PIN
 function generateClientPin() {
     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let pin = '';
@@ -18,38 +32,31 @@ function generateClientPin() {
     return pin;
 }
 
-// Check if server requires authentication
+// Initialize application views
 async function initApp() {
-    try {
-        const res = await fetch('/api/config');
-        if (res.ok) {
-            const config = await res.json();
-            if (config.authRequired && !currentAuthKey) {
-                const entered = prompt("This server is protected with an Access Key. Please enter the Access Key (AUTH_KEY):");
-                if (entered) {
-                    currentAuthKey = entered.trim();
-                    localStorage.setItem('fileShare_auth', currentAuthKey);
-                }
-            }
-        }
-    } catch (e) {
-        // Continue if config check fails
-    }
+    await checkAuthConfig();
 
-    // 1. Check if opened on Mobile via QR scan (?action=upload&pin=XXXX)
+    // 1. Mobile Upload View (?action=upload&pin=XXXX)
     if (action === 'upload' && sessionPin) {
         document.getElementById('desktop-view').classList.add('hidden');
         document.getElementById('mobile-upload-view').classList.remove('hidden');
         document.getElementById('mobile-pin-label').innerText = `Session PIN: ${sessionPin}`;
-    } else {
-        // 2. Initialize Desktop Mode
+    } 
+    // 2. Mobile / Recipient Download View (?action=download&pin=XXXX)
+    else if (action === 'download' && sessionPin) {
+        document.getElementById('desktop-view').classList.add('hidden');
+        document.getElementById('mobile-download-view').classList.remove('hidden');
+        document.getElementById('download-pin-label').innerText = `PIN: ${sessionPin}`;
+    } 
+    // 3. Desktop Mode
+    else {
         initDesktopReceive();
     }
 }
 
 initApp();
 
-// Update file name labels when a file is chosen
+// File input listeners for display
 const pcFileInput = document.getElementById('pcFileInput');
 const pcFileName = document.getElementById('pcFileName');
 if (pcFileInput && pcFileName) {
@@ -94,8 +101,7 @@ if (mobileFileInput && mobileFileName) {
 // Desktop: Setup "Receive File" QR & poll server until phone uploads the file
 function initDesktopReceive() {
     const receivePin = generateClientPin();
-    const authQuery = currentAuthKey ? `&auth=${encodeURIComponent(currentAuthKey)}` : '';
-    const mobileUploadUrl = `${window.location.origin}/?action=upload&pin=${receivePin}${authQuery}`;
+    const mobileUploadUrl = `${window.location.origin}/?action=upload&pin=${receivePin}`;
     
     new QRCode(document.getElementById('receive-qr'), {
         text: mobileUploadUrl,
@@ -108,10 +114,7 @@ function initDesktopReceive() {
 
     const pollInterval = setInterval(async () => {
         try {
-            const statusUrl = `/api/status/${receivePin}${currentAuthKey ? `?auth=${encodeURIComponent(currentAuthKey)}` : ''}`;
-            const res = await fetch(statusUrl, {
-                headers: currentAuthKey ? { 'X-Auth-Key': currentAuthKey } : {}
-            });
+            const res = await fetch(`/api/status/${receivePin}`);
             if (res.ok) {
                 clearInterval(pollInterval);
                 let filename = "Received file";
@@ -133,7 +136,15 @@ function initDesktopReceive() {
                 const dlBtn = document.getElementById('btnDownloadReceive');
                 if (dlBtn) {
                     dlBtn.onclick = () => {
-                        const downloadUrl = `/api/download/${receivePin}${currentAuthKey ? `?auth=${encodeURIComponent(currentAuthKey)}` : ''}`;
+                        let authKey = '';
+                        if (isAuthRequired) {
+                            authKey = getAuthKey('download this file');
+                            if (authKey === null || authKey === '') {
+                                return;
+                            }
+                        }
+
+                        const downloadUrl = `/api/download/${receivePin}${authKey ? `?auth=${encodeURIComponent(authKey)}` : ''}`;
                         window.location.href = downloadUrl;
                         dlBtn.disabled = true;
                         dlBtn.innerText = "Downloading...";
@@ -161,6 +172,15 @@ async function uploadFromPC() {
         return;
     }
 
+    let authKey = '';
+    if (isAuthRequired) {
+        authKey = getAuthKey('upload this file');
+        if (authKey === null || authKey === '') {
+            statusEl.innerText = "Upload cancelled: Auth key is required.";
+            return;
+        }
+    }
+
     const file = fileInput.files[0];
     statusEl.innerText = "Uploading to server...";
     qrContainer.innerHTML = "";
@@ -170,12 +190,11 @@ async function uploadFromPC() {
         const headers = {
             'X-File-Name': encodeURIComponent(file.name)
         };
-        if (currentAuthKey) {
-            headers['X-Auth-Key'] = currentAuthKey;
+        if (authKey) {
+            headers['X-Auth-Key'] = authKey;
         }
 
-        const uploadUrl = `/api/upload${currentAuthKey ? `?auth=${encodeURIComponent(currentAuthKey)}` : ''}`;
-        const response = await fetch(uploadUrl, {
+        const response = await fetch('/api/upload', {
             method: 'POST',
             headers: headers,
             body: file
@@ -183,14 +202,14 @@ async function uploadFromPC() {
 
         if (!response.ok) {
             if (response.status === 401) {
-                throw new Error("Unauthorized: Invalid access key. Check AUTH_KEY.");
+                throw new Error("Invalid Auth Key");
             }
             throw new Error(`HTTP ${response.status}`);
         }
 
         const data = await response.json();
-        const authParam = currentAuthKey ? `?auth=${encodeURIComponent(currentAuthKey)}` : '';
-        const downloadUrl = `${window.location.origin}/api/download/${data.pin}${authParam}`;
+        // QR points to download action page so phone user can enter key to download
+        const downloadUrl = `${window.location.origin}/?action=download&pin=${data.pin}`;
 
         qrContainer.classList.remove('hidden');
         new QRCode(qrContainer, {
@@ -216,6 +235,15 @@ async function uploadFromMobile() {
         return;
     }
 
+    let authKey = '';
+    if (isAuthRequired) {
+        authKey = getAuthKey('upload to computer');
+        if (authKey === null || authKey === '') {
+            statusEl.innerText = "Upload cancelled: Auth key is required.";
+            return;
+        }
+    }
+
     const file = fileInput.files[0];
     statusEl.innerText = "Uploading to computer...";
 
@@ -224,12 +252,11 @@ async function uploadFromMobile() {
             'X-File-Name': encodeURIComponent(file.name),
             'X-Session-Pin': sessionPin
         };
-        if (currentAuthKey) {
-            headers['X-Auth-Key'] = currentAuthKey;
+        if (authKey) {
+            headers['X-Auth-Key'] = authKey;
         }
 
-        const uploadUrl = `/api/upload${currentAuthKey ? `?auth=${encodeURIComponent(currentAuthKey)}` : ''}`;
-        const response = await fetch(uploadUrl, {
+        const response = await fetch('/api/upload', {
             method: 'POST',
             headers: headers,
             body: file
@@ -237,7 +264,7 @@ async function uploadFromMobile() {
 
         if (!response.ok) {
             if (response.status === 401) {
-                throw new Error("Unauthorized: Invalid access key.");
+                throw new Error("Invalid Auth Key");
             }
             throw new Error(`HTTP ${response.status}`);
         }
@@ -245,5 +272,28 @@ async function uploadFromMobile() {
         statusEl.innerText = "Upload complete! Check your computer screen.";
     } catch (error) {
         statusEl.innerText = "Upload failed: " + error.message;
+    }
+}
+
+// Recipient / Mobile: Download file from link action
+function downloadFromLink() {
+    if (!sessionPin) return;
+    const dlBtn = document.getElementById('btn-download-action');
+    const statusEl = document.getElementById('download-status');
+
+    let authKey = '';
+    if (isAuthRequired) {
+        authKey = getAuthKey('download this file');
+        if (authKey === null || authKey === '') {
+            statusEl.innerText = "Download cancelled: Auth key is required.";
+            return;
+        }
+    }
+
+    const downloadUrl = `/api/download/${sessionPin}${authKey ? `?auth=${encodeURIComponent(authKey)}` : ''}`;
+    window.location.href = downloadUrl;
+    if (dlBtn) {
+        dlBtn.disabled = true;
+        dlBtn.innerText = "Downloading...";
     }
 }

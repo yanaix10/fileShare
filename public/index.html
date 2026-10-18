@@ -265,6 +265,14 @@
             <button onclick="uploadFromMobile()">Upload File</button>
             <div id="mobile-status" class="status"></div>
         </div>
+
+        <!-- Download View (Shown when opening a download link ?action=download&pin=XXXX) -->
+        <div id="mobile-download-view" class="card hidden" style="margin: 0 auto; width: 100%; max-width: 400px;">
+            <h2>Download File</h2>
+            <p id="download-pin-label"></p>
+            <div id="download-status" class="status" style="margin-bottom: 14px;">File ready for download</div>
+            <button id="btn-download-action" onclick="downloadFromLink()">Download File</button>
+        </div>
     </div>
 
     <script src="app.js"></script>
