@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>fileShare</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=2">
+    <link rel="shortcut icon" href="/favicon.ico?v=2">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
@@ -31,16 +34,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 6px;
+            gap: 12px;
+            margin-bottom: 8px;
         }
 
         .logo-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(20, 83, 45, 0.2);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(20, 83, 45, 0.25);
             flex-shrink: 0;
+            display: inline-block;
         }
 
         h1 {
@@ -208,7 +212,7 @@
 
     <div class="container">
         <div class="logo-header">
-            <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+            <svg class="logo-icon" width="38" height="38" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
                 <rect width="48" height="48" rx="12" fill="#14532d"/>
                 <path d="M14 12C14 10.8954 14.8954 10 16 10H26L34 18V36C34 37.1046 33.1046 38 32 38H16C14.8954 38 14 37.1046 14 36V12Z" fill="#ffffff" fill-opacity="0.25"/>
                 <path d="M24 16L31 23H26V32H22V23H17L24 16Z" fill="#86efac"/>
