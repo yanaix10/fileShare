@@ -1,10 +1,12 @@
 # fileShare
 
-![fileShare Screenshot](assets/screenshot.png)
-
 A lightweight, ephemeral file-sharing web application built with Go and Vanilla JS. Transfer files between computers and mobile devices using 4-character PINs and QR codes.
 
 No accounts or mobile apps required. Files are deleted immediately after download or after 5 minutes.
+
+<p align="center">
+  <img src="assets/screenshot.png" alt="fileShare Screenshot" width="600">
+</p>
 
 ---
 
@@ -38,14 +40,15 @@ Open `http://localhost:8080` in your browser.
 
 ### Render (Recommended, Free, No Credit Card Required)
 
-1. Sign up on [Render.com](https://render.com) using your GitHub account.
-2. Click **New +** > **Web Service**.
-3. Select your `fileShare` repository.
-4. Set the runtime to **Docker** and select the **Free** instance type.
-5. (Optional) Under **Environment Variables**, add:
+1. **Fork this repository**: Click the **Fork** button at the top right of this GitHub page to create a copy under your account.
+2. Sign up on [Render.com](https://render.com) using your GitHub account.
+3. Click **New +** > **Web Service**.
+4. Select your forked `fileShare` repository.
+5. Set the runtime to **Docker** and select the **Free** instance type.
+6. (Optional) Under **Environment Variables**, add:
    - `AUTH_KEY` = `your-password` (sets a password for your server; leave empty for open access)
    - `PORT` = `8080`
-6. Click **Create Web Service**. Render gives you a free HTTPS link (e.g. `https://fileshare-xyz.onrender.com`).
+7. Click **Create Web Service**. Render gives you a free HTTPS link (e.g. `https://fileshare-xyz.onrender.com`).
 
 ---
 
