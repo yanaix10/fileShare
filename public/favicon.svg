@@ -1,6 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
-  <rect width="48" height="48" rx="12" fill="#14532d"/>
-  <path d="M14 12C14 10.8954 14.8954 10 16 10H26L34 18V36C34 37.1046 33.1046 38 32 38H16C14.8954 38 14 37.1046 14 36V12Z" fill="#ffffff" fill-opacity="0.25"/>
-  <path d="M24 16L31 23H26V32H22V23H17L24 16Z" fill="#86efac"/>
-  <path d="M14 35H34" stroke="#86efac" stroke-width="2.5" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="orangeGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+  </defs>
+  <rect width="48" height="48" rx="12" fill="url(#orangeGrad)"/>
+  <path d="M14 12C14 10.8954 14.8954 10 16 10H26L34 18V36C34 37.1046 33.1046 38 32 38H16C14.8954 38 14 37.1046 14 36V12Z" fill="#ffffff" fill-opacity="0.28"/>
+  <path d="M24 16L31 23H26V32H22V23H17L24 16Z" fill="#fed7aa"/>
+  <path d="M14 35H34" stroke="#ffedd5" stroke-width="2.5" stroke-linecap="round"/>
 </svg>

@@ -1,0 +1,821 @@
+/* Light Orange Theme & Basketball Hoop Uploader Styles */
+:root {
+    --primary: #f97316;
+    --primary-dark: #ea580c;
+    --primary-darker: #c2410c;
+    --primary-light: #fed7aa;
+    --primary-bg: #fff7ed;
+    --bg-page: #fff9f5;
+    --card-bg: #ffffff;
+    --border-color: #ffedd5;
+    --border-hover: #fdba74;
+    --text-main: #1c1917;
+    --text-muted: #78716c;
+    --text-dark: #431407;
+    --radius-lg: 16px;
+    --radius-md: 10px;
+    --radius-sm: 6px;
+    --shadow-card: 0 10px 30px -5px rgba(234, 88, 12, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
+    --shadow-btn: 0 4px 14px rgba(234, 88, 12, 0.28);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", sans-serif;
+    background-color: var(--bg-page);
+    background-image: radial-gradient(circle at 50% 0%, #fff2e5 0%, #fff9f5 60%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: var(--text-main);
+    line-height: 1.5;
+    padding: 36px 18px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 860px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* Header */
+.logo-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.logo-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+    flex-shrink: 0;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.logo-icon:hover {
+    transform: rotate(5deg) scale(1.05);
+}
+
+h1 {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-bottom: 22px;
+}
+
+/* Instructions Box */
+.instructions-box {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--primary);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    text-align: left;
+    font-size: 13.5px;
+    color: var(--text-dark);
+    line-height: 1.6;
+    box-shadow: 0 2px 10px rgba(234, 88, 12, 0.04);
+}
+
+.instructions-box strong {
+    color: var(--primary-dark);
+}
+
+.instructions-box ol {
+    padding-left: 20px;
+    margin-top: 6px;
+}
+
+.instructions-box li {
+    margin-bottom: 4px;
+}
+
+/* Grid Layout */
+.grid {
+    display: flex;
+    gap: 22px;
+    justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
+}
+
+/* Common Card */
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-card);
+    color: var(--text-main);
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.card:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 14px 34px -5px rgba(234, 88, 12, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Left Card: Receive File */
+.card-receive {
+    width: 330px;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+.card-receive h2 {
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text-main);
+}
+
+.card-receive p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+}
+
+/* QR Code Box */
+.qr-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 196px;
+    height: 196px;
+    margin: 12px auto;
+    background: #ffffff;
+    border: 2px solid var(--primary-light);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.06);
+    flex-shrink: 0;
+    padding: 8px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.qr-box:hover {
+    border-color: var(--primary);
+    transform: scale(1.02);
+}
+
+.qr-box canvas, .qr-box img {
+    border-radius: 4px;
+}
+
+/* Status Pill / Message */
+.status {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--text-dark);
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    line-height: 1.45;
+    width: 100%;
+}
+
+.status strong {
+    color: var(--primary-dark);
+}
+
+/* Buttons */
+button, .btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: var(--shadow-btn);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+button:hover, .btn-primary:hover {
+    background: linear-gradient(135deg, #fb923c 0%, var(--primary) 100%);
+    box-shadow: 0 6px 18px rgba(234, 88, 12, 0.38);
+    transform: translateY(-1.5px);
+}
+
+button:active, .btn-primary:active {
+    transform: translateY(0);
+}
+
+button:disabled, .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    background: #ffffff;
+    color: var(--primary-dark);
+    border: 1.5px solid var(--primary-light);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.btn-secondary:hover {
+    background: var(--primary-bg);
+    border-color: var(--primary);
+    color: var(--primary-darker);
+    box-shadow: 0 4px 10px rgba(234, 88, 12, 0.15);
+}
+
+/* ========================================================
+   RIGHT CARD: Jorge Molina Basketball Dropzone Component
+   ======================================================== */
+.card-uploader {
+    flex: 1;
+    min-width: 360px;
+    max-width: 480px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    position: relative;
+}
+
+/* Component Header */
+.uploader-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.uploader-title-group h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.01em;
+    margin-bottom: 2px;
+}
+
+.uploader-title-group p {
+    font-size: 13.5px;
+    color: var(--text-muted);
+}
+
+/* Top-Right Scoreboard Badge: "Uploaded 0" */
+.scoreboard-badge {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.scoreboard-badge.pop {
+    transform: scale(1.22);
+    background: #ffedd5;
+    border-color: var(--primary);
+    color: var(--primary-dark);
+}
+
+.scoreboard-badge strong {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.scoreboard-badge.pop strong {
+    color: var(--primary-dark);
+}
+
+/* Dropzone Outer Container */
+.dropzone-outer {
+    position: relative;
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 18px;
+    padding: 20px 16px 0 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+    overflow: hidden;
+}
+
+.dropzone-outer.dragover {
+    border-color: var(--primary);
+    background-color: #fff7ed;
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12);
+}
+
+/* Dropzone Top Label & Icon */
+.dropzone-callout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 12px;
+    pointer-events: none;
+}
+
+.dropzone-callout-icon {
+    width: 26px;
+    height: 26px;
+    color: #94a3b8;
+    margin-bottom: 6px;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.dropzone-outer.dragover .dropzone-callout-icon {
+    color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.dropzone-callout-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.dropzone-callout-sub {
+    font-size: 12.5px;
+    color: var(--text-muted);
+}
+
+/* Basketball Hoop Assembly */
+.hoop-stage {
+    position: relative;
+    width: 100%;
+    height: 125px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Backboard */
+.backboard {
+    position: absolute;
+    top: 0;
+    width: 136px;
+    height: 90px;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dropzone-outer.dragover .backboard {
+    border-color: var(--primary-light);
+    box-shadow: 0 4px 18px rgba(234, 88, 12, 0.15);
+}
+
+/* Inner Target Rectangle on Backboard */
+.backboard-target {
+    width: 54px;
+    height: 42px;
+    border: 2.5px solid var(--primary-dark);
+    border-radius: 3px;
+    background: rgba(254, 215, 170, 0.06);
+}
+
+/* Rim Mounting Bracket */
+.rim-bracket {
+    position: absolute;
+    top: 76px;
+    width: 14px;
+    height: 6px;
+    background: #c2410c;
+    border-radius: 2px;
+    z-index: 4;
+}
+
+/* Rim (Orange Ring in 3D Perspective) */
+.rim-container {
+    position: absolute;
+    top: 78px;
+    width: 82px;
+    height: 24px;
+    z-index: 5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.rim-ring {
+    width: 82px;
+    height: 24px;
+    border: 4.5px solid var(--primary-dark);
+    border-radius: 50%;
+    box-sizing: border-box;
+    box-shadow: 0 3px 6px rgba(194, 65, 12, 0.35);
+    background: transparent;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rim-container.rim-hit .rim-ring {
+    transform: translateY(3px) scale(1.04);
+    box-shadow: 0 6px 14px rgba(234, 88, 12, 0.6);
+}
+
+/* Basketball Net */
+.net-container {
+    position: absolute;
+    top: 88px;
+    width: 76px;
+    height: 65px;
+    z-index: 3;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.net-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    transform-origin: top center;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Swish Net Animation */
+.net-container.swish .net-svg {
+    animation: netSwishAnim 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes netSwishAnim {
+    0% { transform: scale(1, 1); }
+    25% { transform: scale(1.28, 1.15) translateY(4px); }
+    50% { transform: scale(0.92, 0.95); }
+    75% { transform: scale(1.08, 1.04); }
+    100% { transform: scale(1, 1); }
+}
+
+/* Floating celebration text ("SWISH! 🏀") */
+.swish-floating-text {
+    position: absolute;
+    top: 60px;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--primary-dark);
+    text-shadow: 0 2px 8px rgba(255, 255, 255, 0.9);
+    pointer-events: none;
+    z-index: 20;
+    opacity: 0;
+    transform: translateY(0) scale(0.7);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.swish-floating-text.show {
+    opacity: 1;
+    transform: translateY(-24px) scale(1.15);
+}
+
+/* Shooting Court Area */
+.court-stage {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    touch-action: none;
+}
+
+/* Trajectory Canvas */
+.trajectory-canvas {
+    position: absolute;
+    top: -125px;
+    left: 0;
+    width: 100%;
+    height: 285px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Confetti Canvas */
+.confetti-canvas {
+    position: absolute;
+    top: -125px;
+    left: 0;
+    width: 100%;
+    height: 285px;
+    pointer-events: none;
+    z-index: 15;
+}
+
+/* Draggable File Card */
+.draggable-file-item {
+    position: absolute;
+    bottom: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    z-index: 12;
+    transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.draggable-file-item:hover {
+    transform: translateY(-4px);
+}
+
+.draggable-file-item.grabbing {
+    cursor: grabbing;
+    transition: none;
+    z-index: 25;
+}
+
+.draggable-file-item.shooting {
+    cursor: default;
+    transition: none;
+    z-index: 25;
+}
+
+/* The Document Graphic */
+.file-doc-card {
+    position: relative;
+    width: 58px;
+    height: 72px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 8px 6px;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.draggable-file-item:hover .file-doc-card {
+    border-color: var(--primary-light);
+    box-shadow: 0 10px 22px rgba(234, 88, 12, 0.16);
+}
+
+/* Folded Corner */
+.file-doc-fold {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #f1f5f9 50%, #cbd5e1 50%);
+    border-bottom-left-radius: 4px;
+    box-shadow: -1px 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* PDF / Type Badge */
+.file-doc-badge {
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.25);
+    text-transform: uppercase;
+}
+
+/* Document stripes */
+.file-doc-lines {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.file-doc-line {
+    height: 3px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    width: 100%;
+}
+
+.file-doc-line.short {
+    width: 60%;
+}
+
+/* File name label */
+.draggable-file-label {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+    transition: color 0.2s ease;
+}
+
+.draggable-file-item:hover .draggable-file-label {
+    color: var(--primary-dark);
+}
+
+/* Court Action Bar (Controls & Fallbacks) */
+.court-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.court-actions-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.court-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-court {
+    padding: 6px 14px;
+    font-size: 13px;
+    margin-top: 0;
+}
+
+.sound-toggle-btn {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    padding: 5px 9px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 0;
+    box-shadow: none;
+    transition: all 0.15s ease;
+}
+
+.sound-toggle-btn:hover {
+    background: #f8fafc;
+    color: var(--text-main);
+    border-color: #cbd5e1;
+    transform: none;
+    box-shadow: none;
+}
+
+.sound-toggle-btn.active {
+    color: var(--primary-dark);
+    border-color: var(--primary-light);
+    background: var(--primary-bg);
+}
+
+/* Result Download QR Panel */
+.upload-result-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    animation: fadeInSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.upload-result-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 2px;
+}
+
+.upload-result-sub {
+    font-size: 12.5px;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+}
+
+.upload-result-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Mobile & Download Views */
+.mobile-view-card {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 420px;
+    align-items: center;
+}
+
+.file-upload-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin: 14px 0 10px;
+    width: 100%;
+}
+
+.custom-file-btn {
+    display: inline-block;
+    background-color: #ffffff;
+    color: var(--primary-dark);
+    border: 1.5px solid var(--primary-light);
+    border-radius: var(--radius-sm);
+    padding: 7px 18px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.custom-file-btn:hover {
+    background-color: var(--primary-bg);
+    border-color: var(--primary);
+}
+
+.file-chosen-text {
+    font-size: 13px;
+    color: var(--text-muted);
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+    display: block;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    body {
+        padding: 20px 14px;
+    }
+
+    .grid {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card-receive, .card-uploader {
+        width: 100%;
+        max-width: 440px;
+    }
+}
