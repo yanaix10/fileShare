@@ -1,10 +1,10 @@
 // ============================================================================
-// fileShare - Light Orange Theme & Basketball Hoop Uploader
+// fileShare - Clean, Non-Repetitive UI & Wireless Phone Bridge
 // ============================================================================
 
-const params = new URLSearchParams(window.location.search);
-const action = params.get('action');
-const sessionPin = params.get('pin');
+const urlParams = new URLSearchParams(window.location.search);
+const action = urlParams.get('action');
+const sessionPin = urlParams.get('pin') ? urlParams.get('pin').toUpperCase() : '';
 
 let isAuthRequired = false;
 let uploadedScore = 0;
@@ -12,12 +12,44 @@ let soundEnabled = true;
 let isAudioContextReady = false;
 let audioCtx = null;
 
-// Track active file for shooting & uploading
+// Send mode state
 let activeFile = null;
 let activeFileName = "final_final_v7.pdf";
-let lastGeneratedDownloadUrl = "";
+let currentSendPin = "";
+let currentSendUrl = "";
 
-// Check if server requires an auth key
+// Receive mode state
+let currentReceiveSessionPin = "";
+let receivePollInterval = null;
+
+// ============================================================================
+// App Mode Switcher (Send vs Receive)
+// ============================================================================
+function switchAppMode(mode) {
+    const tabSend = document.getElementById('tabSend');
+    const tabReceive = document.getElementById('tabReceive');
+    const viewSend = document.getElementById('viewSend');
+    const viewReceive = document.getElementById('viewReceive');
+
+    if (!tabSend || !tabReceive || !viewSend || !viewReceive) return;
+
+    if (mode === 'send') {
+        tabSend.classList.add('active');
+        tabReceive.classList.remove('active');
+        viewSend.classList.remove('hidden');
+        viewReceive.classList.add('hidden');
+        setTimeout(calculateRestPosition, 50);
+        setTimeout(resizeCanvases, 50);
+    } else {
+        tabReceive.classList.add('active');
+        tabSend.classList.remove('active');
+        viewReceive.classList.remove('hidden');
+        viewSend.classList.add('hidden');
+        initReceiveMode();
+    }
+}
+
+// Check server auth config
 async function checkAuthConfig() {
     try {
         const res = await fetch('/api/config');
@@ -28,15 +60,13 @@ async function checkAuthConfig() {
     } catch (e) {}
 }
 
-// Prompt for auth key when needed
 function getAuthKey(actionName) {
     if (!isAuthRequired) return '';
     const key = prompt(`Website is protected. Please enter the Auth Key to ${actionName}:`);
     return key ? key.trim() : null;
 }
 
-// Generate a random 4-character alphanumeric PIN
-function generateClientPin() {
+function generatePin() {
     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let pin = '';
     for (let i = 0; i < 4; i++) {
@@ -46,7 +76,7 @@ function generateClientPin() {
 }
 
 // ============================================================================
-// Synthesized Web Audio API Sound Effects (Zero External Files Needed)
+// Synthesized Web Audio API Sound Effects
 // ============================================================================
 function initAudio() {
     if (isAudioContextReady && audioCtx) return;
@@ -64,7 +94,6 @@ function playSwooshSound() {
     initAudio();
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
-
     try {
         const now = audioCtx.currentTime;
         const osc = audioCtx.createOscillator();
@@ -96,10 +125,8 @@ function playRimSound() {
     initAudio();
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
-
     try {
         const now = audioCtx.currentTime;
-        // Metallic bonk / clank
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
 
@@ -123,10 +150,8 @@ function playSwishSound() {
     initAudio();
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
-
     try {
         const now = audioCtx.currentTime;
-        // Filtered white noise creates an ultra-realistic nylon net swish
         const bufferSize = audioCtx.sampleRate * 0.25;
         const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
         const data = buffer.getChannelData(0);
@@ -162,72 +187,58 @@ function playScoreChime() {
     initAudio();
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
-
     try {
         const now = audioCtx.currentTime;
-        // Two harmonious bell notes: D5 & A5
-        [587.33, 880].forEach((freq, index) => {
+        [587.33, 880].forEach((freq, idx) => {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            const startOffset = index * 0.07;
+            const offset = idx * 0.07;
 
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, now + startOffset);
+            osc.frequency.setValueAtTime(freq, now + offset);
 
-            gain.gain.setValueAtTime(0.01, now + startOffset);
-            gain.gain.linearRampToValueAtTime(0.25, now + startOffset + 0.02);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + startOffset + 0.35);
+            gain.gain.setValueAtTime(0.01, now + offset);
+            gain.gain.linearRampToValueAtTime(0.25, now + offset + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.35);
 
             osc.connect(gain);
             gain.connect(audioCtx.destination);
 
-            osc.start(now + startOffset);
-            osc.stop(now + startOffset + 0.35);
+            osc.start(now + offset);
+            osc.stop(now + offset + 0.35);
         });
     } catch (e) {}
 }
 
 // ============================================================================
-// Confetti Celebration Particles
+// Confetti & Celebration
 // ============================================================================
 const confettiCanvas = document.getElementById('confettiCanvas');
-let confettiCtx = null;
+let confettiCtx = confettiCanvas ? confettiCanvas.getContext('2d') : null;
 let confettiParticles = [];
 let confettiAnimId = null;
-
-if (confettiCanvas) {
-    confettiCtx = confettiCanvas.getContext('2d');
-}
 
 function resizeCanvases() {
     const court = document.getElementById('courtStage');
     const traj = document.getElementById('trajectoryCanvas');
     if (!court) return;
 
-    const rect = court.getBoundingClientRect();
-    const w = rect.width;
-    const h = rect.height + 125; // Include hoop stage height
+    const w = court.clientWidth;
+    const h = court.clientHeight + 125;
 
-    if (traj) {
-        traj.width = w;
-        traj.height = h;
-    }
-    if (confettiCanvas) {
-        confettiCanvas.width = w;
-        confettiCanvas.height = h;
-    }
+    if (traj) { traj.width = w; traj.height = h; }
+    if (confettiCanvas) { confettiCanvas.width = w; confettiCanvas.height = h; }
 }
 window.addEventListener('resize', resizeCanvases);
 
 function triggerConfetti(originX, originY) {
     if (!confettiCtx || !confettiCanvas) return;
-
-    const colors = ['#f97316', '#ea580c', '#fb923c', '#fed7aa', '#ffffff', '#eab308', '#f43f5e'];
+    const colors = ['#f97316', '#ea580c', '#fb923c', '#fed7aa', '#ffffff', '#eab308'];
     confettiParticles = [];
 
-    for (let i = 0; i < 36; i++) {
-        const angle = (Math.PI / 18) * (i + Math.random() * 0.5) + Math.PI * 0.05;
-        const speed = 2.5 + Math.random() * 5.5;
+    for (let i = 0; i < 32; i++) {
+        const angle = (Math.PI / 16) * i + Math.random() * 0.4;
+        const speed = 2.5 + Math.random() * 5.0;
         confettiParticles.push({
             x: originX,
             y: originY,
@@ -244,10 +255,10 @@ function triggerConfetti(originX, originY) {
 
     if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
 
-    function updateConfetti() {
+    function update() {
         if (!confettiCtx) return;
         confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-        let activeCount = 0;
+        let active = 0;
 
         for (let p of confettiParticles) {
             p.x += p.vx;
@@ -258,7 +269,7 @@ function triggerConfetti(originX, originY) {
             p.alpha -= 0.016;
 
             if (p.alpha > 0) {
-                activeCount++;
+                active++;
                 confettiCtx.save();
                 confettiCtx.globalAlpha = Math.max(0, p.alpha);
                 confettiCtx.translate(p.x, p.y);
@@ -269,19 +280,12 @@ function triggerConfetti(originX, originY) {
             }
         }
 
-        if (activeCount > 0) {
-            confettiAnimId = requestAnimationFrame(updateConfetti);
-        } else {
-            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-        }
+        if (active > 0) confettiAnimId = requestAnimationFrame(update);
+        else confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
     }
-
-    updateConfetti();
+    update();
 }
 
-// ============================================================================
-// Scoreboard & Celebration Badge
-// ============================================================================
 function incrementScore() {
     uploadedScore++;
     const scoreEl = document.getElementById('uploadCount');
@@ -289,7 +293,7 @@ function incrementScore() {
     if (scoreEl) scoreEl.textContent = uploadedScore;
     if (badge) {
         badge.classList.remove('pop');
-        void badge.offsetWidth; // Force reflow
+        void badge.offsetWidth;
         badge.classList.add('pop');
         setTimeout(() => badge.classList.remove('pop'), 600);
     }
@@ -306,14 +310,12 @@ function triggerSwishCelebration() {
         net.classList.add('swish');
         setTimeout(() => net.classList.remove('swish'), 600);
     }
-
     if (rim) {
         rim.classList.remove('rim-hit');
         void rim.offsetWidth;
         rim.classList.add('rim-hit');
         setTimeout(() => rim.classList.remove('rim-hit'), 300);
     }
-
     if (text) {
         text.classList.remove('show');
         void text.offsetWidth;
@@ -325,12 +327,9 @@ function triggerSwishCelebration() {
     playScoreChime();
     incrementScore();
 
-    // Trigger confetti from hoop center
     const court = document.getElementById('courtStage');
     if (court) {
-        const cx = court.clientWidth / 2;
-        const cy = 90; // Approx rim Y in canvas coordinate space
-        triggerConfetti(cx, cy);
+        triggerConfetti(court.clientWidth / 2, 90);
     }
 }
 
@@ -340,8 +339,7 @@ function triggerSwishCelebration() {
 function getFileBadgeText(name) {
     if (!name) return "FILE";
     const ext = name.split('.').pop().toUpperCase();
-    if (ext.length > 4) return ext.substring(0, 4);
-    return ext || "FILE";
+    return ext.length > 4 ? ext.substring(0, 4) : (ext || "FILE");
 }
 
 function updateFileCardDisplay(filename) {
@@ -353,7 +351,7 @@ function updateFileCardDisplay(filename) {
 }
 
 // ============================================================================
-// Basketball Hoop Aim & Shooting Physics Engine
+// Basketball Hoop Shooting Physics Engine
 // ============================================================================
 const draggableFile = document.getElementById('draggableFile');
 const trajectoryCanvas = document.getElementById('trajectoryCanvas');
@@ -364,16 +362,10 @@ let isDragging = false;
 let isShooting = false;
 let dragStartX = 0;
 let dragStartY = 0;
-let fileRestX = 0;
-let fileRestY = 0;
 let currentDragX = 0;
 let currentDragY = 0;
 
 function calculateRestPosition() {
-    if (!courtStage || !draggableFile) return;
-    const courtRect = courtStage.getBoundingClientRect();
-    fileRestX = courtRect.width / 2;
-    fileRestY = courtRect.height - 50;
     resetFileToRest();
 }
 
@@ -402,21 +394,19 @@ function drawTrajectory(startX, startY, vx, vy, gravity) {
     let py = startY;
     let pvx = vx;
     let pvy = vy;
-    const dt = 1.0;
 
-    for (let t = 0; t < 28; t++) {
+    for (let t = 0; t < 26; t++) {
         points.push({ x: px, y: py });
-        px += pvx * dt;
-        py += pvy * dt;
-        pvy += gravity * dt;
-        if (py < 40) break; // Don't draw beyond top
+        px += pvx;
+        py += pvy;
+        pvy += gravity;
+        if (py < 40) break;
     }
 
-    // Draw glowing trajectory dots
     points.forEach((pt, i) => {
         if (i % 2 !== 0) return;
         const radius = Math.max(2, 4.5 - i * 0.1);
-        const alpha = Math.max(0.2, 0.9 - i * 0.028);
+        const alpha = Math.max(0.2, 0.9 - i * 0.03);
 
         ctx.beginPath();
         ctx.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
@@ -428,32 +418,21 @@ function drawTrajectory(startX, startY, vx, vy, gravity) {
     });
 }
 
-// Compute velocity vector from drag displacement
 function computeLaunchVelocity(dx, dy) {
-    // Intelligent drag mode:
-    // If pulled down/back (slingshot style): vector is inverted (-dx, -dy)
-    // If flicked/dragged up (flick style): vector is direct (dx, dy)
     let vx = 0;
     let vy = 0;
-
     if (dy > 0) {
-        // Slingshot pull backwards
         vx = -dx * 0.12;
         vy = -dy * 0.15;
     } else {
-        // Direct forward flick/aim
         vx = dx * 0.12;
         vy = dy * 0.15;
     }
-
-    // Clamp launch velocities for a pleasant arc
     vx = Math.max(-10, Math.min(10, vx));
     vy = Math.min(-7, Math.max(-18, vy));
-
     return { vx, vy, gravity: 0.55 };
 }
 
-// Drag & Aim Event Handlers (Pointer Events support both Mouse & Touch)
 if (draggableFile && courtStage) {
     draggableFile.addEventListener('pointerdown', (e) => {
         if (isShooting) return;
@@ -462,7 +441,6 @@ if (draggableFile && courtStage) {
         draggableFile.classList.add('grabbing');
         draggableFile.setPointerCapture(e.pointerId);
 
-        const courtRect = courtStage.getBoundingClientRect();
         dragStartX = e.clientX;
         dragStartY = e.clientY;
         currentDragX = 0;
@@ -477,12 +455,10 @@ if (draggableFile && courtStage) {
         currentDragX = dx;
         currentDragY = dy;
 
-        // Visual drag offset with damping
         const displayDx = dx * 0.45;
         const displayDy = dy * 0.45;
         draggableFile.style.transform = `translate(${displayDx}px, ${displayDy}px) rotate(${dx * 0.08}deg)`;
 
-        // Trajectory preview in canvas coordinates
         const canvasStartX = courtStage.clientWidth / 2 + displayDx;
         const canvasStartY = courtStage.clientHeight + 125 - 60 + displayDy;
         const { vx, vy, gravity } = computeLaunchVelocity(dx, dy);
@@ -490,18 +466,16 @@ if (draggableFile && courtStage) {
         drawTrajectory(canvasStartX, canvasStartY, vx, vy, gravity);
     });
 
-    const finishDrag = (e) => {
+    const finishDrag = () => {
         if (!isDragging) return;
         isDragging = false;
         clearTrajectory();
 
         const dist = Math.hypot(currentDragX, currentDragY);
         if (dist > 25) {
-            // User aimed and released: shoot!
             const { vx, vy, gravity } = computeLaunchVelocity(currentDragX, currentDragY);
             executeShot(vx, vy, gravity);
         } else {
-            // Tiny drag or click: reset gently
             resetFileToRest();
         }
     };
@@ -510,8 +484,7 @@ if (draggableFile && courtStage) {
     draggableFile.addEventListener('pointercancel', finishDrag);
 }
 
-// Execute Shot Animation & Physics
-function executeShot(initVx, initVy, gravity, isGuaranteed = false) {
+function executeShot(initVx, initVy, gravity) {
     if (isShooting || !courtStage || !draggableFile) return;
     isShooting = true;
     draggableFile.classList.add('shooting');
@@ -519,9 +492,6 @@ function executeShot(initVx, initVy, gravity, isGuaranteed = false) {
     playSwooshSound();
 
     const courtWidth = courtStage.clientWidth;
-    const courtHeight = courtStage.clientHeight;
-
-    // Start position relative to court center
     let posX = 0;
     let posY = 0;
     let vx = initVx;
@@ -529,8 +499,6 @@ function executeShot(initVx, initVy, gravity, isGuaranteed = false) {
     let rot = 0;
     let rotSpeed = vx * 1.8;
 
-    // Coordinates of hoop elements (relative to court center)
-    // Hoop center X = 0, Hoop Rim Y approx -155px
     const hoopY = -155;
     const rimLeft = -38;
     const rimRight = 38;
@@ -539,94 +507,72 @@ function executeShot(initVx, initVy, gravity, isGuaranteed = false) {
     let hasScored = false;
     let frame = 0;
 
-    function physicsStep() {
+    function step() {
         frame++;
         posX += vx;
         posY += vy;
         vy += gravity;
         rot += rotSpeed;
 
-        // Check Backboard collision (around Y between -210 and -150)
         if (!hasHitBackboard && posY <= -160 && posY >= -220 && Math.abs(posX) <= 65) {
             hasHitBackboard = true;
             playRimSound();
-            // Rebound off backboard down into the rim
             vx = -vx * 0.35 + (posX > 0 ? -1.5 : 1.5);
             vy = Math.abs(vy) * 0.45 + 1.8;
             rotSpeed = -rotSpeed * 0.5;
         }
 
-        // Check Rim / Swish crossing downwards
         if (!hasScored && vy > 0 && posY >= hoopY && posY <= hoopY + 28 && posX >= rimLeft && posX <= rimRight) {
             hasScored = true;
             triggerSwishCelebration();
-            // Slow down and drop straight through net
             vx = vx * 0.25;
             vy = 2.2;
             rotSpeed *= 0.3;
         }
 
-        // Apply transform
         draggableFile.style.transform = `translate(${posX}px, ${posY}px) rotate(${rot}deg) scale(${hasScored ? 0.85 : 1})`;
 
-        // End condition: passed through net or fell off screen
         if (hasScored && posY > hoopY + 60) {
-            // Successful swish! Fade out and trigger real upload
             draggableFile.style.opacity = '0';
             setTimeout(() => {
                 resetFileToRest();
-                handleShotSuccessUpload();
+                handleShotUploadComplete();
             }, 300);
             return;
         }
 
         if (posY > 80 || posX < -courtWidth / 2 - 40 || posX > courtWidth / 2 + 40 || frame > 120) {
-            // Missed shot: bounce softly and reset
-            if (hasHitBackboard && !hasScored) {
-                playRimSound();
-            }
-            setTimeout(() => {
-                resetFileToRest();
-            }, 250);
+            if (hasHitBackboard && !hasScored) playRimSound();
+            setTimeout(resetFileToRest, 250);
             return;
         }
 
-        requestAnimationFrame(physicsStep);
+        requestAnimationFrame(step);
     }
-
-    requestAnimationFrame(physicsStep);
+    requestAnimationFrame(step);
 }
 
-// Guaranteed Perfect Shot (for "Shoot! 🏀" button or 1-click execution)
 function triggerAutoShot() {
     if (isShooting) return;
     initAudio();
-    // High-arching swish shot
-    const vx = 0.2;
-    const vy = -12.4;
-    const gravity = 0.48;
-    executeShot(vx, vy, gravity, true);
+    executeShot(0.2, -12.4, 0.48);
 }
 
 const btnShoot = document.getElementById('btnShoot');
-if (btnShoot) {
-    btnShoot.addEventListener('click', triggerAutoShot);
-}
+if (btnShoot) btnShoot.addEventListener('click', triggerAutoShot);
 
-// ============================================================================
-// Native Drag & Drop from OS Desktop onto Hoop Dropzone
-// ============================================================================
+// Native OS Drag and Drop
 if (dropzoneOuter) {
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropzoneOuter.addEventListener(eventName, (e) => {
+    ['dragenter', 'dragover'].forEach(name => {
+        dropzoneOuter.addEventListener(name, (e) => {
             e.preventDefault();
             e.stopPropagation();
             dropzoneOuter.classList.add('dragover');
         });
     });
 
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropzoneOuter.addEventListener(eventName, (e) => {
+    ['dragleave', 'drop'].forEach(name => {
+        dropzoneOuter.addEventListener(name, (e) => {
             e.preventDefault();
             e.stopPropagation();
             dropzoneOuter.classList.remove('dragover');
@@ -639,26 +585,23 @@ if (dropzoneOuter) {
             const file = dt.files[0];
             activeFile = file;
             updateFileCardDisplay(file.name);
-            // Auto shot on drop for instant delightful feedback!
             triggerAutoShot();
         }
     });
 }
 
-// PC File Input Handler
+// PC File Input
 const pcFileInput = document.getElementById('pcFileInput');
 if (pcFileInput) {
     pcFileInput.addEventListener('change', () => {
         if (pcFileInput.files && pcFileInput.files.length > 0) {
             activeFile = pcFileInput.files[0];
             updateFileCardDisplay(activeFile.name);
-            const statusEl = document.getElementById('send-status');
-            if (statusEl) statusEl.classList.add('hidden');
         }
     });
 }
 
-// Sound Toggle
+// Sound toggle
 const btnSoundToggle = document.getElementById('btnSoundToggle');
 if (btnSoundToggle) {
     btnSoundToggle.addEventListener('click', () => {
@@ -675,332 +618,439 @@ if (btnSoundToggle) {
     });
 }
 
-// "Shoot Another File" button
-const btnShootAnother = document.getElementById('btnShootAnother');
-if (btnShootAnother) {
-    btnShootAnother.addEventListener('click', () => {
-        const resultPanel = document.getElementById('send-result-panel');
-        if (resultPanel) resultPanel.classList.add('hidden');
-        resetFileToRest();
-        if (pcFileInput) pcFileInput.value = '';
-        activeFile = null;
-        updateFileCardDisplay("final_final_v7.pdf");
-    });
-}
-
-// "Copy Link" button
-const btnCopyDownloadLink = document.getElementById('btnCopyDownloadLink');
-if (btnCopyDownloadLink) {
-    btnCopyDownloadLink.addEventListener('click', async () => {
-        if (!lastGeneratedDownloadUrl) return;
-        try {
-            await navigator.clipboard.writeText(lastGeneratedDownloadUrl);
-            const originalText = btnCopyDownloadLink.textContent;
-            btnCopyDownloadLink.textContent = '✅ Copied!';
-            setTimeout(() => {
-                btnCopyDownloadLink.textContent = originalText;
-            }, 1800);
-        } catch (e) {
-            prompt('Download Link:', lastGeneratedDownloadUrl);
-        }
-    });
-}
-
 // ============================================================================
-// Upload Execution & QR Generation (PC to Phone)
+// Upload Execution & Displaying the Concise Share Card
 // ============================================================================
-async function handleShotSuccessUpload() {
+async function handleShotUploadComplete() {
     let fileToUpload = activeFile;
-
-    // If user shot without picking a file, create a realistic sample PDF blob
     if (!fileToUpload) {
-        const sampleText = `%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/MediaBox[0 0 612 792]/Parent 2 0 R/Contents 4 0 R>>endobj\n4 0 obj<</Length 55>>stream\nBT /F1 24 Tf 100 700 Td (fileShare Basketball Swish Upload!) Tj ET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f\n0000000009 00000 n\n0000000058 00000 n\n0000000115 00000 n\n0000000216 00000 n\ntrailer<</Size 5/Root 1 0 R>>\nstartxref\n323\n%%EOF`;
+        const sampleText = `%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/MediaBox[0 0 612 792]/Parent 2 0 R/Contents 4 0 R>>endobj\n4 0 obj<</Length 55>>stream\nBT /F1 24 Tf 100 700 Td (fileShare Ephemeral File Transfer) Tj ET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f\n0000000009 00000 n\n0000000058 00000 n\n0000000115 00000 n\n0000000216 00000 n\ntrailer<</Size 5/Root 1 0 R>>\nstartxref\n323\n%%EOF`;
         fileToUpload = new Blob([sampleText], { type: 'application/pdf' });
         fileToUpload.name = activeFileName || "final_final_v7.pdf";
     }
 
-    const statusEl = document.getElementById('send-status');
-    const resultPanel = document.getElementById('send-result-panel');
-    const qrContainer = document.getElementById('send-qr');
-    const pinLabel = document.getElementById('send-pin-label');
+    const sendStatus = document.getElementById('sendStatus');
+    const transferReadyCard = document.getElementById('transferReadyCard');
+    const courtWrapper = document.getElementById('courtInteractiveWrapper');
+    const transferFileName = document.getElementById('transferFileName');
+    const sendQrCode = document.getElementById('sendQrCode');
+    const pinBoxes = document.getElementById('pinDisplayBoxes');
 
-    if (statusEl) {
-        statusEl.classList.remove('hidden');
-        statusEl.innerHTML = `Uploading <strong>${fileToUpload.name}</strong> to server...`;
+    if (sendStatus) {
+        sendStatus.classList.remove('hidden');
+        sendStatus.innerHTML = `Uploading <strong>${fileToUpload.name}</strong>...`;
     }
 
     let authKey = '';
     if (isAuthRequired) {
         authKey = getAuthKey('upload this file');
         if (authKey === null || authKey === '') {
-            if (statusEl) statusEl.innerText = "Upload cancelled: Auth key is required.";
+            if (sendStatus) sendStatus.innerText = "Upload cancelled: Auth key required.";
             return;
         }
     }
 
     try {
-        const headers = {
-            'X-File-Name': encodeURIComponent(fileToUpload.name)
-        };
-        if (authKey) {
-            headers['X-Auth-Key'] = authKey;
-        }
+        const headers = { 'X-File-Name': encodeURIComponent(fileToUpload.name) };
+        if (authKey) headers['X-Auth-Key'] = authKey;
 
-        const response = await fetch('/api/upload', {
+        const res = await fetch('/api/upload', {
             method: 'POST',
             headers: headers,
             body: fileToUpload
         });
 
-        if (!response.ok) {
-            if (response.status === 401) throw new Error("Invalid Auth Key");
-            throw new Error(`HTTP ${response.status}`);
+        if (!res.ok) {
+            if (res.status === 401) throw new Error("Invalid Auth Key");
+            throw new Error(`HTTP ${res.status}`);
         }
 
-        const data = await response.json();
-        const downloadUrl = `${window.location.origin}/?action=download&pin=${data.pin}`;
-        lastGeneratedDownloadUrl = downloadUrl;
+        const data = await res.json();
+        currentSendPin = data.pin.toUpperCase();
+        currentSendUrl = `${window.location.origin}/?action=download&pin=${currentSendPin}`;
 
-        if (statusEl) statusEl.classList.add('hidden');
-        if (resultPanel) resultPanel.classList.remove('hidden');
-        if (pinLabel) {
-            pinLabel.innerHTML = `Scan with phone to download (PIN: <strong>${data.pin}</strong>)<br><small style="color: var(--text-muted);">Auto-deletes immediately after download or in 5 mins.</small>`;
+        if (sendStatus) sendStatus.classList.add('hidden');
+        if (courtWrapper) courtWrapper.classList.add('hidden');
+        if (transferReadyCard) transferReadyCard.classList.remove('hidden');
+        if (transferFileName) transferFileName.textContent = fileToUpload.name;
+
+        // Render 4-char PIN boxes
+        if (pinBoxes) {
+            pinBoxes.innerHTML = currentSendPin.split('').map(ch => `<div class="pin-char-box">${ch}</div>`).join('');
         }
 
-        if (qrContainer) {
-            qrContainer.innerHTML = '';
-            new QRCode(qrContainer, {
-                text: downloadUrl,
-                width: 180,
-                height: 180,
+        // Render QR Code
+        if (sendQrCode) {
+            sendQrCode.innerHTML = '';
+            new QRCode(sendQrCode, {
+                text: currentSendUrl,
+                width: 164,
+                height: 164,
                 colorDark: "#1c1917",
                 colorLight: "#ffffff"
             });
         }
     } catch (err) {
-        if (statusEl) {
-            statusEl.classList.remove('hidden');
-            statusEl.innerText = "Upload failed: " + err.message;
+        if (sendStatus) {
+            sendStatus.classList.remove('hidden');
+            sendStatus.innerText = "Upload failed: " + err.message;
         }
     }
 }
 
-// Fallback upload button for accessibility
-async function uploadFromPC() {
-    if (!activeFile && pcFileInput && pcFileInput.files.length > 0) {
-        activeFile = pcFileInput.files[0];
-    }
-    triggerAutoShot();
-}
+// "Shoot Another File" button
+const btnShootAnother = document.getElementById('btnShootAnother');
+if (btnShootAnother) {
+    btnShootAnother.addEventListener('click', () => {
+        const transferReadyCard = document.getElementById('transferReadyCard');
+        const courtWrapper = document.getElementById('courtInteractiveWrapper');
+        if (transferReadyCard) transferReadyCard.classList.add('hidden');
+        if (courtWrapper) courtWrapper.classList.remove('hidden');
 
-// ============================================================================
-// Desktop: Setup "Receive File" QR & Poll Server until Phone Uploads
-// ============================================================================
-function initDesktopReceive() {
-    const receiveQrEl = document.getElementById('receive-qr');
-    if (!receiveQrEl) return;
-
-    const receivePin = generateClientPin();
-    const mobileUploadUrl = `${window.location.origin}/?action=upload&pin=${receivePin}`;
-
-    new QRCode(receiveQrEl, {
-        text: mobileUploadUrl,
-        width: 180,
-        height: 180,
-        colorDark: "#1c1917",
-        colorLight: "#ffffff"
+        activeFile = null;
+        if (pcFileInput) pcFileInput.value = '';
+        updateFileCardDisplay("final_final_v7.pdf");
+        resetFileToRest();
+        setTimeout(resizeCanvases, 50);
     });
+}
 
-    const statusEl = document.getElementById('receive-status');
-    if (statusEl) {
-        statusEl.innerHTML = `Session PIN: <strong>${receivePin}</strong><br><span style="color: var(--text-muted); font-size: 12px;">Waiting for phone upload...</span>`;
+// Copy PIN & Copy Link
+const btnCopyPin = document.getElementById('btnCopyPin');
+if (btnCopyPin) {
+    btnCopyPin.addEventListener('click', async () => {
+        if (!currentSendPin) return;
+        try {
+            await navigator.clipboard.writeText(currentSendPin);
+            btnCopyPin.textContent = '✅ Copied!';
+            setTimeout(() => { btnCopyPin.textContent = '📋 Copy PIN'; }, 1800);
+        } catch (e) {
+            prompt('PIN Code:', currentSendPin);
+        }
+    });
+}
+
+const btnCopyLink = document.getElementById('btnCopyLink');
+if (btnCopyLink) {
+    btnCopyLink.addEventListener('click', async () => {
+        if (!currentSendUrl) return;
+        try {
+            await navigator.clipboard.writeText(currentSendUrl);
+            btnCopyLink.textContent = '✅ Copied!';
+            setTimeout(() => { btnCopyLink.textContent = '🔗 Copy Link'; }, 1800);
+        } catch (e) {
+            prompt('Download Link:', currentSendUrl);
+        }
+    });
+}
+
+// ============================================================================
+// RECEIVE MODE (Direct PIN or Phone Bridge)
+// ============================================================================
+function initReceiveMode() {
+    if (receivePollInterval) clearInterval(receivePollInterval);
+
+    // Generate unique 4-character session PIN for this screen (Laptop B)
+    currentReceiveSessionPin = generatePin();
+
+    const pinText = document.getElementById('screenBridgePinText');
+    const qrContainer = document.getElementById('screenReceiveQr');
+    const liveStatus = document.getElementById('bridgeLiveStatus');
+    const actionWrap = document.getElementById('bridgeDownloadAction');
+
+    if (pinText) pinText.textContent = currentReceiveSessionPin;
+    if (liveStatus) liveStatus.textContent = "Listening for phone upload or beam...";
+    if (actionWrap) actionWrap.classList.add('hidden');
+
+    // Phone scans this QR if it wants to upload directly from phone to this computer
+    const receiveUrl = `${window.location.origin}/?action=upload&pin=${currentReceiveSessionPin}`;
+    if (qrContainer) {
+        qrContainer.innerHTML = '';
+        new QRCode(qrContainer, {
+            text: receiveUrl,
+            width: 164,
+            height: 164,
+            colorDark: "#1c1917",
+            colorLight: "#ffffff"
+        });
     }
 
-    const pollInterval = setInterval(async () => {
+    // Poll status for incoming beam from phone or upload
+    receivePollInterval = setInterval(async () => {
         try {
-            const res = await fetch(`/api/status/${receivePin}`);
+            const res = await fetch(`/api/status/${currentReceiveSessionPin}`);
             if (res.ok) {
-                clearInterval(pollInterval);
-                let filename = "Received file";
-                try {
-                    const data = await res.json();
-                    if (data && data.filename) {
-                        filename = data.filename;
-                    }
-                } catch (e) {}
+                clearInterval(receivePollInterval);
+                const data = await res.json();
+                const filename = data.filename || "file.dat";
 
-                if (statusEl) {
-                    statusEl.innerHTML = `
-                        <div style="margin-top: 4px;">
-                            <div style="font-weight: 700; color: var(--primary-dark); margin-bottom: 3px;">🎉 File ready from phone!</div>
-                            <div style="font-size: 13px; color: var(--text-dark); word-break: break-all; margin-bottom: 10px;">${filename}</div>
-                            <button id="btnDownloadReceive" class="btn-primary" style="margin-top: 4px;">Download File</button>
-                        </div>
-                    `;
-
-                    const dlBtn = document.getElementById('btnDownloadReceive');
-                    if (dlBtn) {
-                        dlBtn.onclick = () => {
-                            let authKey = '';
-                            if (isAuthRequired) {
-                                authKey = getAuthKey('download this file');
-                                if (authKey === null || authKey === '') return;
-                            }
-
-                            const downloadUrl = `/api/download/${receivePin}${authKey ? `?auth=${encodeURIComponent(authKey)}` : ''}`;
-                            window.location.href = downloadUrl;
-                            dlBtn.disabled = true;
-                            dlBtn.innerText = "Downloading...";
-                            setTimeout(() => {
-                                statusEl.innerHTML += `<div style="margin-top: 10px; font-size: 12.5px;"><a href="#" onclick="location.reload()" style="color: var(--primary-dark); font-weight: 600; text-decoration: underline;">Receive another file</a></div>`;
-                            }, 1500);
-                        };
-                    }
+                if (liveStatus) {
+                    liveStatus.innerHTML = `<strong>🎉 File Ready:</strong> ${filename}`;
                 }
+                if (actionWrap) {
+                    actionWrap.classList.remove('hidden');
+                }
+
+                // Auto-trigger download for seamless hands-free transfer
+                triggerDownloadByPin(currentReceiveSessionPin);
             }
-        } catch (err) {
-            // Network poll retry
-        }
+        } catch (e) {}
     }, 2000);
 }
 
-// ============================================================================
-// Mobile: Upload selected file tied to the scanned Session PIN
-// ============================================================================
-const mobileFileInput = document.getElementById('mobileFileInput');
-const mobileFileName = document.getElementById('mobileFileName');
-if (mobileFileInput && mobileFileName) {
-    mobileFileInput.addEventListener('change', () => {
-        if (mobileFileInput.files && mobileFileInput.files.length > 0) {
-            mobileFileName.textContent = mobileFileInput.files[0].name;
-            mobileFileName.style.color = '#ea580c';
-            mobileFileName.style.fontWeight = '600';
-        } else {
-            mobileFileName.textContent = 'No file chosen';
-            mobileFileName.style.color = 'var(--text-muted)';
-            mobileFileName.style.fontWeight = 'normal';
-        }
-    });
-}
+// Direct PIN Download input
+const btnDownloadByPin = document.getElementById('btnDownloadByPin');
+const receivePinInput = document.getElementById('receivePinInput');
+const receivePinStatus = document.getElementById('receivePinStatus');
 
-async function uploadFromMobile() {
-    const fileInput = document.getElementById('mobileFileInput');
-    const statusEl = document.getElementById('mobile-status');
+async function handleDirectPinDownload() {
+    if (!receivePinInput) return;
+    const pin = receivePinInput.value.trim().toUpperCase();
 
-    if (!fileInput || fileInput.files.length === 0) {
-        if (statusEl) {
-            statusEl.classList.remove('hidden');
-            statusEl.innerText = "Please select a file first.";
+    if (pin.length !== 4) {
+        if (receivePinStatus) {
+            receivePinStatus.classList.remove('hidden');
+            receivePinStatus.innerText = "Please enter a valid 4-character PIN.";
         }
         return;
     }
 
-    let authKey = '';
-    if (isAuthRequired) {
-        authKey = getAuthKey('upload to computer');
-        if (authKey === null || authKey === '') {
-            if (statusEl) {
-                statusEl.classList.remove('hidden');
-                statusEl.innerText = "Upload cancelled: Auth key is required.";
-            }
-            return;
-        }
-    }
-
-    const file = fileInput.files[0];
-    if (statusEl) {
-        statusEl.classList.remove('hidden');
-        statusEl.innerText = "Uploading to computer...";
+    if (receivePinStatus) {
+        receivePinStatus.classList.remove('hidden');
+        receivePinStatus.innerText = `Checking PIN ${pin}...`;
     }
 
     try {
-        const headers = {
-            'X-File-Name': encodeURIComponent(file.name),
-            'X-Session-Pin': sessionPin
-        };
-        if (authKey) {
-            headers['X-Auth-Key'] = authKey;
+        const res = await fetch(`/api/status/${pin}`);
+        if (!res.ok) {
+            if (receivePinStatus) receivePinStatus.innerText = `PIN "${pin}" not found or expired.`;
+            return;
         }
 
-        const response = await fetch('/api/upload', {
-            method: 'POST',
-            headers: headers,
-            body: file
-        });
-
-        if (!response.ok) {
-            if (response.status === 401) throw new Error("Invalid Auth Key");
-            throw new Error(`HTTP ${response.status}`);
+        const data = await res.json();
+        if (receivePinStatus) {
+            receivePinStatus.innerHTML = `Found <strong>${data.filename || "file"}</strong>! Downloading...`;
         }
-
-        if (statusEl) {
-            statusEl.innerHTML = `<span style="color: var(--primary-dark); font-weight: 700;">✅ Upload complete!</span><br>Check your computer screen to download.`;
-        }
-    } catch (error) {
-        if (statusEl) statusEl.innerText = "Upload failed: " + error.message;
+        triggerDownloadByPin(pin);
+    } catch (e) {
+        if (receivePinStatus) receivePinStatus.innerText = "Network error checking PIN.";
     }
 }
 
-// ============================================================================
-// Recipient / Mobile: Download file from link action
-// ============================================================================
-function downloadFromLink() {
-    if (!sessionPin) return;
-    const dlBtn = document.getElementById('btn-download-action');
-    const statusEl = document.getElementById('download-status');
+if (btnDownloadByPin) btnDownloadByPin.addEventListener('click', handleDirectPinDownload);
+if (receivePinInput) {
+    receivePinInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleDirectPinDownload();
+    });
+}
 
+function triggerDownloadByPin(pin) {
     let authKey = '';
     if (isAuthRequired) {
         authKey = getAuthKey('download this file');
-        if (authKey === null || authKey === '') {
-            if (statusEl) statusEl.innerText = "Download cancelled: Auth key is required.";
-            return;
+        if (authKey === null || authKey === '') return;
+    }
+    const dlUrl = `/api/download/${pin}${authKey ? `?auth=${encodeURIComponent(authKey)}` : ''}`;
+    window.location.href = dlUrl;
+}
+
+const btnBridgeDownload = document.getElementById('btnBridgeDownload');
+if (btnBridgeDownload) {
+    btnBridgeDownload.addEventListener('click', () => {
+        if (currentReceiveSessionPin) triggerDownloadByPin(currentReceiveSessionPin);
+    });
+}
+
+// ============================================================================
+// MOBILE HUB (When Phone Scans QR from Laptop A: Download or Beam to Laptop B)
+// ============================================================================
+async function initMobileHub() {
+    const mainModeSwitcher = document.getElementById('mainModeSwitcher');
+    const viewSend = document.getElementById('viewSend');
+    const viewReceive = document.getElementById('viewReceive');
+    const viewMobileHub = document.getElementById('viewMobileHub');
+
+    if (mainModeSwitcher) mainModeSwitcher.classList.add('hidden');
+    if (viewSend) viewSend.classList.add('hidden');
+    if (viewReceive) viewReceive.classList.add('hidden');
+    if (viewMobileHub) viewMobileHub.classList.remove('hidden');
+
+    const fileNameEl = document.getElementById('mobileFileName');
+    const pinTagEl = document.getElementById('mobilePinTag');
+    if (pinTagEl) pinTagEl.textContent = `PIN: ${sessionPin}`;
+
+    try {
+        const res = await fetch(`/api/status/${sessionPin}`);
+        if (res.ok) {
+            const data = await res.json();
+            if (fileNameEl) fileNameEl.textContent = data.filename || "Shared File";
+        } else {
+            if (fileNameEl) fileNameEl.textContent = "File not found or expired";
         }
+    } catch (e) {
+        if (fileNameEl) fileNameEl.textContent = "Shared File";
     }
 
-    const downloadUrl = `/api/download/${sessionPin}${authKey ? `?auth=${encodeURIComponent(authKey)}` : ''}`;
-    window.location.href = downloadUrl;
-    if (dlBtn) {
-        dlBtn.disabled = true;
-        dlBtn.innerText = "Downloading...";
+    // Button 1: Download to this phone
+    const btnMobileDownload = document.getElementById('btnMobileDownload');
+    if (btnMobileDownload) {
+        btnMobileDownload.onclick = () => {
+            triggerDownloadByPin(sessionPin);
+        };
+    }
+
+    // Button 2: Beam to Laptop B
+    const btnRelayToLaptop = document.getElementById('btnRelayToLaptop');
+    const relayTargetInput = document.getElementById('relayTargetPinInput');
+    const relayStatus = document.getElementById('relayStatus');
+
+    if (btnRelayToLaptop && relayTargetInput) {
+        btnRelayToLaptop.onclick = async () => {
+            const targetPin = relayTargetInput.value.trim().toUpperCase();
+            if (targetPin.length !== 4) {
+                if (relayStatus) {
+                    relayStatus.classList.remove('hidden');
+                    relayStatus.innerText = "Enter the 4-digit Bridge Code from Laptop B.";
+                }
+                return;
+            }
+
+            if (relayStatus) {
+                relayStatus.classList.remove('hidden');
+                relayStatus.innerText = `Beaming file to screen ${targetPin}...`;
+            }
+
+            try {
+                let authKey = '';
+                if (isAuthRequired) {
+                    authKey = getAuthKey('beam this file');
+                    if (!authKey) return;
+                }
+
+                const relayUrl = `/api/relay?from=${sessionPin}&to=${targetPin}${authKey ? `&auth=${encodeURIComponent(authKey)}` : ''}`;
+                const res = await fetch(relayUrl);
+
+                if (!res.ok) {
+                    const txt = await res.text();
+                    throw new Error(txt || `HTTP ${res.status}`);
+                }
+
+                if (relayStatus) {
+                    relayStatus.innerHTML = `<span style="color: var(--primary-dark); font-weight: 700;">✅ Success!</span><br>File beamed to Laptop (${targetPin}). Check that screen!`;
+                }
+                btnRelayToLaptop.disabled = true;
+                btnRelayToLaptop.textContent = "✅ Beamed!";
+            } catch (err) {
+                if (relayStatus) {
+                    relayStatus.innerText = "Beam failed: " + err.message;
+                }
+            }
+        };
     }
 }
 
 // ============================================================================
-// Initialize App Views
+// MOBILE DIRECT UPLOAD (When Phone Scans Laptop B's QR to Upload)
+// ============================================================================
+function initMobileUpload() {
+    const mainModeSwitcher = document.getElementById('mainModeSwitcher');
+    const viewSend = document.getElementById('viewSend');
+    const viewReceive = document.getElementById('viewReceive');
+    const viewMobileUpload = document.getElementById('viewMobileUpload');
+
+    if (mainModeSwitcher) mainModeSwitcher.classList.add('hidden');
+    if (viewSend) viewSend.classList.add('hidden');
+    if (viewReceive) viewReceive.classList.add('hidden');
+    if (viewMobileUpload) viewMobileUpload.classList.remove('hidden');
+
+    const pinLabel = document.getElementById('mobileUploadPinLabel');
+    if (pinLabel) pinLabel.innerHTML = `Connected to Screen: <strong>${sessionPin}</strong>`;
+
+    const fileInput = document.getElementById('mobileDirectFileInput');
+    const chosenName = document.getElementById('mobileChosenFileName');
+    if (fileInput && chosenName) {
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                chosenName.textContent = fileInput.files[0].name;
+                chosenName.style.color = '#ea580c';
+                chosenName.style.fontWeight = '600';
+            } else {
+                chosenName.textContent = "No file chosen";
+                chosenName.style.color = 'var(--text-muted)';
+            }
+        });
+    }
+
+    const btnUpload = document.getElementById('btnMobileDirectUpload');
+    const statusEl = document.getElementById('mobileDirectStatus');
+
+    if (btnUpload) {
+        btnUpload.onclick = async () => {
+            if (!fileInput || fileInput.files.length === 0) {
+                if (statusEl) {
+                    statusEl.classList.remove('hidden');
+                    statusEl.innerText = "Please choose a file first.";
+                }
+                return;
+            }
+
+            let authKey = '';
+            if (isAuthRequired) {
+                authKey = getAuthKey('upload to computer');
+                if (!authKey) return;
+            }
+
+            const file = fileInput.files[0];
+            if (statusEl) {
+                statusEl.classList.remove('hidden');
+                statusEl.innerText = "Uploading to computer screen...";
+            }
+
+            try {
+                const headers = {
+                    'X-File-Name': encodeURIComponent(file.name),
+                    'X-Session-Pin': sessionPin
+                };
+                if (authKey) headers['X-Auth-Key'] = authKey;
+
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: headers,
+                    body: file
+                });
+
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color: var(--primary-dark); font-weight: 700;">✅ Upload Complete!</span><br>Check your computer screen to download.`;
+                }
+                btnUpload.disabled = true;
+                btnUpload.textContent = "Uploaded!";
+            } catch (err) {
+                if (statusEl) statusEl.innerText = "Upload failed: " + err.message;
+            }
+        };
+    }
+}
+
+// ============================================================================
+// Initialize App
 // ============================================================================
 async function initApp() {
     await checkAuthConfig();
 
-    // 1. Mobile Upload View (?action=upload&pin=XXXX)
-    if (action === 'upload' && sessionPin) {
-        const desktopView = document.getElementById('desktop-view');
-        const mobileUploadView = document.getElementById('mobile-upload-view');
-        if (desktopView) desktopView.classList.add('hidden');
-        if (mobileUploadView) {
-            mobileUploadView.classList.remove('hidden');
-            const pinLabel = document.getElementById('mobile-pin-label');
-            if (pinLabel) pinLabel.innerHTML = `Session PIN: <strong>${sessionPin}</strong>`;
-        }
-    } 
-    // 2. Mobile Download View (?action=download&pin=XXXX)
-    else if (action === 'download' && sessionPin) {
-        const desktopView = document.getElementById('desktop-view');
-        const mobileDownloadView = document.getElementById('mobile-download-view');
-        if (desktopView) desktopView.classList.add('hidden');
-        if (mobileDownloadView) {
-            mobileDownloadView.classList.remove('hidden');
-            const pinLabel = document.getElementById('download-pin-label');
-            if (pinLabel) pinLabel.innerHTML = `PIN: <strong>${sessionPin}</strong>`;
-        }
-    } 
-    // 3. Desktop Mode
+    // 1. Mobile Download & Bridge Relay (?action=download&pin=XXXX)
+    if (action === 'download' && sessionPin) {
+        initMobileHub();
+    }
+    // 2. Mobile Direct Upload to Laptop (?action=upload&pin=XXXX)
+    else if (action === 'upload' && sessionPin) {
+        initMobileUpload();
+    }
+    // 3. Desktop Mode (Default: Send File with Basketball Hoop)
     else {
-        initDesktopReceive();
-        setTimeout(calculateRestPosition, 100);
-        setTimeout(resizeCanvases, 100);
+        switchAppMode('send');
     }
 }
 
-// Start application
 initApp();

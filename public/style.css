@@ -1,4 +1,6 @@
-/* Light Orange Theme & Basketball Hoop Uploader Styles */
+/* ==========================================================================
+   fileShare - Light Orange Theme & Modern Clean UI
+   ========================================================================== */
 :root {
     --primary: #f97316;
     --primary-dark: #ea580c;
@@ -12,9 +14,9 @@
     --text-main: #1c1917;
     --text-muted: #78716c;
     --text-dark: #431407;
-    --radius-lg: 16px;
-    --radius-md: 10px;
-    --radius-sm: 6px;
+    --radius-lg: 18px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
     --shadow-card: 0 10px 30px -5px rgba(234, 88, 12, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
     --shadow-btn: 0 4px 14px rgba(234, 88, 12, 0.28);
 }
@@ -28,17 +30,17 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", sans-serif;
     background-color: var(--bg-page);
-    background-image: radial-gradient(circle at 50% 0%, #fff2e5 0%, #fff9f5 60%);
+    background-image: radial-gradient(circle at 50% 0%, #fff2e5 0%, #fff9f5 65%);
     background-repeat: no-repeat;
     background-attachment: fixed;
     color: var(--text-main);
     line-height: 1.5;
-    padding: 36px 18px;
+    padding: 32px 16px;
     min-height: 100vh;
 }
 
 .container {
-    max-width: 860px;
+    max-width: 640px;
     margin: 0 auto;
     text-align: center;
 }
@@ -49,12 +51,12 @@ body {
     align-items: center;
     justify-content: center;
     gap: 12px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .logo-icon {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
     flex-shrink: 0;
@@ -67,7 +69,7 @@ body {
 }
 
 h1 {
-    font-size: 30px;
+    font-size: 28px;
     font-weight: 800;
     letter-spacing: -0.02em;
     background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
@@ -76,128 +78,67 @@ h1 {
 }
 
 .subtitle {
-    font-size: 15px;
+    font-size: 14.5px;
     color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+/* Mode Switcher Tabs (Send vs Receive) */
+.mode-switcher {
+    display: inline-flex;
+    background: #ffffff;
+    border: 1px solid var(--border-hover);
+    padding: 4px;
+    border-radius: 9999px;
     margin-bottom: 22px;
+    box-shadow: 0 3px 12px rgba(234, 88, 12, 0.08);
+    gap: 4px;
 }
 
-/* Instructions Box */
-.instructions-box {
-    background-color: #ffffff;
-    border: 1px solid var(--border-color);
-    border-left: 4px solid var(--primary);
-    border-radius: var(--radius-md);
-    padding: 16px 20px;
-    margin-bottom: 28px;
-    text-align: left;
-    font-size: 13.5px;
-    color: var(--text-dark);
-    line-height: 1.6;
-    box-shadow: 0 2px 10px rgba(234, 88, 12, 0.04);
+.mode-tab {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 22px;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 0;
+    box-shadow: none;
 }
 
-.instructions-box strong {
+.mode-tab:hover {
     color: var(--primary-dark);
+    transform: none;
+    box-shadow: none;
 }
 
-.instructions-box ol {
-    padding-left: 20px;
-    margin-top: 6px;
+.mode-tab.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: #ffffff;
+    box-shadow: 0 3px 10px rgba(234, 88, 12, 0.3);
 }
 
-.instructions-box li {
-    margin-bottom: 4px;
-}
-
-/* Grid Layout */
-.grid {
-    display: flex;
-    gap: 22px;
-    justify-content: center;
-    align-items: stretch;
-    flex-wrap: wrap;
-}
-
-/* Common Card */
-.card {
+/* Main Cards */
+.main-card {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 24px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
+    text-align: left;
     box-shadow: var(--shadow-card);
     color: var(--text-main);
     transition: box-shadow 0.25s ease, border-color 0.25s ease;
-}
-
-.card:hover {
-    border-color: var(--border-hover);
-    box-shadow: 0 14px 34px -5px rgba(234, 88, 12, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
-}
-
-/* Left Card: Receive File */
-.card-receive {
-    width: 330px;
-    flex-shrink: 0;
-    align-items: center;
-}
-
-.card-receive h2 {
-    font-size: 19px;
-    font-weight: 700;
-    margin-bottom: 4px;
-    color: var(--text-main);
-}
-
-.card-receive p {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 14px;
-}
-
-/* QR Code Box */
-.qr-box {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 196px;
-    height: 196px;
-    margin: 12px auto;
-    background: #ffffff;
-    border: 2px solid var(--primary-light);
-    border-radius: var(--radius-md);
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.06);
-    flex-shrink: 0;
-    padding: 8px;
-    transition: transform 0.2s ease, border-color 0.2s ease;
-}
-
-.qr-box:hover {
-    border-color: var(--primary);
-    transform: scale(1.02);
-}
-
-.qr-box canvas, .qr-box img {
-    border-radius: 4px;
-}
-
-/* Status Pill / Message */
-.status {
-    margin-top: 14px;
-    font-size: 13px;
-    color: var(--text-dark);
-    background: var(--primary-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    line-height: 1.45;
     width: 100%;
 }
 
-.status strong {
-    color: var(--primary-dark);
+.main-card:hover {
+    border-color: var(--border-hover);
 }
 
 /* Buttons */
@@ -206,11 +147,10 @@ button, .btn-primary {
     color: #ffffff;
     border: none;
     border-radius: var(--radius-sm);
-    padding: 9px 20px;
+    padding: 10px 20px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    margin-top: 10px;
     box-shadow: var(--shadow-btn);
     transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     display: inline-flex;
@@ -229,12 +169,6 @@ button:active, .btn-primary:active {
     transform: translateY(0);
 }
 
-button:disabled, .btn-primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
 .btn-secondary {
     background: #ffffff;
     color: var(--primary-dark);
@@ -249,21 +183,9 @@ button:disabled, .btn-primary:disabled {
     box-shadow: 0 4px 10px rgba(234, 88, 12, 0.15);
 }
 
-/* ========================================================
-   RIGHT CARD: Jorge Molina Basketball Dropzone Component
-   ======================================================== */
-.card-uploader {
-    flex: 1;
-    min-width: 360px;
-    max-width: 480px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-    position: relative;
-}
-
-/* Component Header */
+/* ==========================================================================
+   VIEW 1: SEND FILE (The Basketball Dropzone)
+   ========================================================================== */
 .uploader-header {
     display: flex;
     justify-content: space-between;
@@ -272,7 +194,7 @@ button:disabled, .btn-primary:disabled {
 }
 
 .uploader-title-group h2 {
-    font-size: 22px;
+    font-size: 21px;
     font-weight: 700;
     color: var(--text-main);
     letter-spacing: -0.01em;
@@ -284,7 +206,7 @@ button:disabled, .btn-primary:disabled {
     color: var(--text-muted);
 }
 
-/* Top-Right Scoreboard Badge: "Uploaded 0" */
+/* Scoreboard Badge */
 .scoreboard-badge {
     background: #f1f5f9;
     border: 1px solid #e2e8f0;
@@ -305,15 +227,6 @@ button:disabled, .btn-primary:disabled {
     transform: scale(1.22);
     background: #ffedd5;
     border-color: var(--primary);
-    color: var(--primary-dark);
-}
-
-.scoreboard-badge strong {
-    color: var(--text-main);
-    font-weight: 700;
-}
-
-.scoreboard-badge.pop strong {
     color: var(--primary-dark);
 }
 
@@ -340,7 +253,6 @@ button:disabled, .btn-primary:disabled {
     box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12);
 }
 
-/* Dropzone Top Label & Icon */
 .dropzone-callout {
     display: flex;
     flex-direction: column;
@@ -385,7 +297,6 @@ button:disabled, .btn-primary:disabled {
     z-index: 2;
 }
 
-/* Backboard */
 .backboard {
     position: absolute;
     top: 0;
@@ -399,15 +310,8 @@ button:disabled, .btn-primary:disabled {
     justify-content: center;
     align-items: flex-end;
     padding-bottom: 10px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.dropzone-outer.dragover .backboard {
-    border-color: var(--primary-light);
-    box-shadow: 0 4px 18px rgba(234, 88, 12, 0.15);
-}
-
-/* Inner Target Rectangle on Backboard */
 .backboard-target {
     width: 54px;
     height: 42px;
@@ -416,7 +320,6 @@ button:disabled, .btn-primary:disabled {
     background: rgba(254, 215, 170, 0.06);
 }
 
-/* Rim Mounting Bracket */
 .rim-bracket {
     position: absolute;
     top: 76px;
@@ -427,7 +330,6 @@ button:disabled, .btn-primary:disabled {
     z-index: 4;
 }
 
-/* Rim (Orange Ring in 3D Perspective) */
 .rim-container {
     position: absolute;
     top: 78px;
@@ -446,16 +348,12 @@ button:disabled, .btn-primary:disabled {
     border-radius: 50%;
     box-sizing: border-box;
     box-shadow: 0 3px 6px rgba(194, 65, 12, 0.35);
-    background: transparent;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .rim-container.rim-hit .rim-ring {
     transform: translateY(3px) scale(1.04);
-    box-shadow: 0 6px 14px rgba(234, 88, 12, 0.6);
 }
 
-/* Basketball Net */
 .net-container {
     position: absolute;
     top: 88px;
@@ -471,10 +369,8 @@ button:disabled, .btn-primary:disabled {
     height: 100%;
     overflow: visible;
     transform-origin: top center;
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Swish Net Animation */
 .net-container.swish .net-svg {
     animation: netSwishAnim 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -487,7 +383,6 @@ button:disabled, .btn-primary:disabled {
     100% { transform: scale(1, 1); }
 }
 
-/* Floating celebration text ("SWISH! 🏀") */
 .swish-floating-text {
     position: absolute;
     top: 60px;
@@ -507,7 +402,7 @@ button:disabled, .btn-primary:disabled {
     transform: translateY(-24px) scale(1.15);
 }
 
-/* Shooting Court Area */
+/* Court Stage */
 .court-stage {
     position: relative;
     width: 100%;
@@ -519,27 +414,17 @@ button:disabled, .btn-primary:disabled {
     touch-action: none;
 }
 
-/* Trajectory Canvas */
-.trajectory-canvas {
+.trajectory-canvas, .confetti-canvas {
     position: absolute;
     top: -125px;
     left: 0;
     width: 100%;
     height: 285px;
     pointer-events: none;
-    z-index: 10;
 }
 
-/* Confetti Canvas */
-.confetti-canvas {
-    position: absolute;
-    top: -125px;
-    left: 0;
-    width: 100%;
-    height: 285px;
-    pointer-events: none;
-    z-index: 15;
-}
+.trajectory-canvas { z-index: 10; }
+.confetti-canvas { z-index: 15; }
 
 /* Draggable File Card */
 .draggable-file-item {
@@ -555,23 +440,10 @@ button:disabled, .btn-primary:disabled {
     transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1);
 }
 
-.draggable-file-item:hover {
-    transform: translateY(-4px);
-}
+.draggable-file-item:hover { transform: translateY(-4px); }
+.draggable-file-item.grabbing { cursor: grabbing; transition: none; z-index: 25; }
+.draggable-file-item.shooting { cursor: default; transition: none; z-index: 25; }
 
-.draggable-file-item.grabbing {
-    cursor: grabbing;
-    transition: none;
-    z-index: 25;
-}
-
-.draggable-file-item.shooting {
-    cursor: default;
-    transition: none;
-    z-index: 25;
-}
-
-/* The Document Graphic */
 .file-doc-card {
     position: relative;
     width: 58px;
@@ -586,15 +458,8 @@ button:disabled, .btn-primary:disabled {
     align-items: center;
     padding: 8px 6px;
     overflow: hidden;
-    transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.draggable-file-item:hover .file-doc-card {
-    border-color: var(--primary-light);
-    box-shadow: 0 10px 22px rgba(234, 88, 12, 0.16);
-}
-
-/* Folded Corner */
 .file-doc-fold {
     position: absolute;
     top: 0;
@@ -603,10 +468,8 @@ button:disabled, .btn-primary:disabled {
     height: 18px;
     background: linear-gradient(135deg, #f1f5f9 50%, #cbd5e1 50%);
     border-bottom-left-radius: 4px;
-    box-shadow: -1px 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-/* PDF / Type Badge */
 .file-doc-badge {
     background: #ef4444;
     color: #ffffff;
@@ -620,7 +483,6 @@ button:disabled, .btn-primary:disabled {
     text-transform: uppercase;
 }
 
-/* Document stripes */
 .file-doc-lines {
     width: 100%;
     display: flex;
@@ -635,29 +497,21 @@ button:disabled, .btn-primary:disabled {
     width: 100%;
 }
 
-.file-doc-line.short {
-    width: 60%;
-}
+.file-doc-line.short { width: 60%; }
 
-/* File name label */
 .draggable-file-label {
     margin-top: 8px;
     font-size: 12px;
     font-weight: 600;
     color: var(--text-muted);
-    max-width: 130px;
+    max-width: 140px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     text-align: center;
-    transition: color 0.2s ease;
 }
 
-.draggable-file-item:hover .draggable-file-label {
-    color: var(--primary-dark);
-}
-
-/* Court Action Bar (Controls & Fallbacks) */
+/* Action controls */
 .court-actions {
     display: flex;
     align-items: center;
@@ -670,22 +524,23 @@ button:disabled, .btn-primary:disabled {
     gap: 10px;
 }
 
-.court-actions-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.court-actions-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
 .btn-court {
-    padding: 6px 14px;
-    font-size: 13px;
+    padding: 7px 16px;
+    font-size: 13.5px;
     margin-top: 0;
+}
+
+.custom-file-btn {
+    display: inline-block;
+    background-color: #ffffff;
+    color: var(--primary-dark);
+    border: 1.5px solid var(--primary-light);
+    border-radius: var(--radius-sm);
+    padding: 7px 16px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .sound-toggle-btn {
@@ -696,16 +551,6 @@ button:disabled, .btn-primary:disabled {
     padding: 5px 9px;
     font-size: 13px;
     cursor: pointer;
-    margin-top: 0;
-    box-shadow: none;
-    transition: all 0.15s ease;
-}
-
-.sound-toggle-btn:hover {
-    background: #f8fafc;
-    color: var(--text-main);
-    border-color: #cbd5e1;
-    transform: none;
     box-shadow: none;
 }
 
@@ -715,107 +560,334 @@ button:disabled, .btn-primary:disabled {
     background: var(--primary-bg);
 }
 
-/* Result Download QR Panel */
-.upload-result-panel {
+/* ==========================================================================
+   TRANSFER READY RESULT PANEL (Concise & Crystal Clear)
+   ========================================================================== */
+.transfer-ready-card {
+    background: var(--primary-bg);
+    border: 1.5px solid var(--border-hover);
+    border-radius: var(--radius-md);
+    padding: 22px;
+    margin-top: 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 16px;
-    padding: 16px;
-    background: var(--primary-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    animation: fadeInSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: center;
+    animation: fadeIn 0.3s ease;
 }
 
-@keyframes fadeInSlide {
-    from { opacity: 0; transform: translateY(8px); }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.upload-result-title {
-    font-size: 15px;
-    font-weight: 700;
+.transfer-ready-title {
+    font-size: 18px;
+    font-weight: 800;
     color: var(--primary-dark);
-    margin-bottom: 2px;
+    margin-bottom: 4px;
 }
 
-.upload-result-sub {
-    font-size: 12.5px;
+.transfer-file-tag {
+    font-size: 13px;
     color: var(--text-dark);
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+    word-break: break-all;
 }
 
-.upload-result-actions {
+/* Big 4-Character PIN Box */
+.pin-display-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.pin-char-box {
+    width: 44px;
+    height: 52px;
+    background: #ffffff;
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 800;
+    font-family: monospace;
+    color: var(--primary-dark);
+    box-shadow: 0 4px 10px rgba(234, 88, 12, 0.15);
+}
+
+/* QR Code Display */
+.qr-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 176px;
+    height: 176px;
+    margin: 8px auto 12px;
+    background: #ffffff;
+    border: 2px solid var(--primary-light);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.06);
+    padding: 6px;
+}
+
+.qr-box canvas, .qr-box img {
+    border-radius: 4px;
+}
+
+/* Concise Instructions Checklist */
+.transfer-guide-box {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 13px;
+    color: var(--text-dark);
+    margin-bottom: 16px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.transfer-guide-box strong {
+    color: var(--primary-dark);
+}
+
+.transfer-actions-row {
     display: flex;
     gap: 10px;
-    margin-top: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-/* Mobile & Download Views */
-.mobile-view-card {
-    margin: 0 auto;
-    width: 100%;
-    max-width: 420px;
-    align-items: center;
-}
-
-.file-upload-wrapper {
+/* ==========================================================================
+   VIEW 2: RECEIVE FILE (Direct PIN or Phone Bridge)
+   ========================================================================== */
+.receive-section {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    margin: 14px 0 10px;
+    text-align: center;
+}
+
+.receive-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 4px;
+}
+
+.receive-header p {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+}
+
+/* PIN Input Form */
+.pin-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
     width: 100%;
 }
 
-.custom-file-btn {
-    display: inline-block;
-    background-color: #ffffff;
-    color: var(--primary-dark);
-    border: 1.5px solid var(--primary-light);
-    border-radius: var(--radius-sm);
-    padding: 7px 18px;
-    font-size: 13.5px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-}
-
-.custom-file-btn:hover {
-    background-color: var(--primary-bg);
-    border-color: var(--primary);
-}
-
-.file-chosen-text {
-    font-size: 13px;
-    color: var(--text-muted);
-    max-width: 280px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.pin-input {
+    width: 180px;
+    height: 48px;
+    font-size: 24px;
+    font-weight: 800;
+    font-family: monospace;
+    letter-spacing: 8px;
     text-align: center;
-    display: block;
+    text-transform: uppercase;
+    border: 2px solid var(--primary-light);
+    border-radius: var(--radius-sm);
+    background: #ffffff;
+    color: var(--primary-dark);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pin-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+/* Divider with text */
+.divider-or {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 16px 0 20px;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.divider-or::before, .divider-or::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+}
+
+.divider-or span {
+    padding: 0 12px;
+}
+
+/* Phone Bridge Box (On Laptop B) */
+.phone-bridge-box {
+    background: var(--primary-bg);
+    border: 1.5px dashed var(--border-hover);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.bridge-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+}
+
+.bridge-sub {
+    font-size: 12.5px;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+    max-width: 360px;
+}
+
+.bridge-code-badge {
+    background: #ffffff;
+    border: 1.5px solid var(--primary);
+    border-radius: 9999px;
+    padding: 6px 18px;
+    font-size: 16px;
+    font-weight: 800;
+    font-family: monospace;
+    letter-spacing: 3px;
+    color: var(--primary-dark);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 6px rgba(234, 88, 12, 0.12);
+    margin-bottom: 10px;
+}
+
+.bridge-status-text {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7); }
+    70% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(249, 115, 22, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+}
+
+/* ==========================================================================
+   MOBILE VIEWS (When Scanned from QR)
+   ========================================================================== */
+.mobile-hub-card {
+    background: #ffffff;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    text-align: center;
+    box-shadow: var(--shadow-card);
+}
+
+.mobile-file-banner {
+    background: var(--primary-bg);
+    border: 1px solid var(--border-hover);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.mobile-file-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    word-break: break-all;
+    margin-bottom: 2px;
+}
+
+.mobile-action-card {
+    background: #fbfcfe;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 14px;
+    text-align: left;
+    transition: border-color 0.2s;
+}
+
+.mobile-action-card:hover {
+    border-color: var(--primary-light);
+}
+
+.mobile-action-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.mobile-action-card p {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.status-box {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--text-dark);
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    line-height: 1.45;
+    width: 100%;
 }
 
 .hidden {
     display: none !important;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    body {
-        padding: 20px 14px;
-    }
-
-    .grid {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .card-receive, .card-uploader {
-        width: 100%;
-        max-width: 440px;
-    }
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    body { padding: 20px 12px; }
+    .main-card { padding: 18px 14px; }
+    .pin-input-row { flex-direction: column; }
+    .pin-input { width: 100%; max-width: 240px; }
 }

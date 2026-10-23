@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
@@ -88,7 +89,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	filename := filepath.Base(decodedName) // Prevent path traversal
 
-	pin := r.Header.Get("X-Session-Pin")
+	pin := strings.ToUpper(strings.TrimSpace(r.Header.Get("X-Session-Pin")))
 	mu.Lock()
 	if len(pin) != 4 {
 		for {
@@ -130,7 +131,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func statusHandler(w http.ResponseWriter, r *http.Request) {
-	pin := r.URL.Path[len("/api/status/"):]
+	pin := strings.ToUpper(strings.TrimSpace(r.URL.Path[len("/api/status/"):]))
 	mu.Lock()
 	entry, exists := fileMap[pin]
 	mu.Unlock()
@@ -141,6 +142,37 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, `{"ready":true,"filename":"%s"}`, entry.OriginalName)
+}
+
+// relayHandler bridges/forwards a file from one PIN to another PIN (e.g. Phone bridges Laptop A to Laptop B)
+func relayHandler(w http.ResponseWriter, r *http.Request) {
+	if !isAuthorized(r) {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	from := strings.ToUpper(strings.TrimSpace(r.URL.Query().Get("from")))
+	to := strings.ToUpper(strings.TrimSpace(r.URL.Query().Get("to")))
+
+	if len(from) != 4 || len(to) != 4 {
+		http.Error(w, "Invalid PIN length (must be 4 characters)", http.StatusBadRequest)
+		return
+	}
+
+	mu.Lock()
+	entry, exists := fileMap[from]
+	if !exists {
+		mu.Unlock()
+		http.Error(w, "Source file not found or expired", http.StatusNotFound)
+		return
+	}
+
+	// Bridge file entry to target PIN
+	fileMap[to] = entry
+	mu.Unlock()
+
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{"success":true,"filename":"%s","pin":"%s"}`, entry.OriginalName, to)
 }
 
 func downloadHandler(w http.ResponseWriter, r *http.Request) {
@@ -154,12 +186,18 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pin := r.URL.Path[len("/api/download/"):]
+	pin := strings.ToUpper(strings.TrimSpace(r.URL.Path[len("/api/download/"):]))
 
 	mu.Lock()
 	entry, exists := fileMap[pin]
 	if exists {
-		delete(fileMap, pin) // Burn after reading
+		// Burn all PIN references to this file after reading
+		filePath := entry.FilePath
+		for p, e := range fileMap {
+			if e.FilePath == filePath {
+				delete(fileMap, p)
+			}
+		}
 	}
 	mu.Unlock()
 
@@ -193,6 +231,7 @@ func main() {
 	})
 	http.HandleFunc("/api/upload", uploadHandler)
 	http.HandleFunc("/api/status/", statusHandler)
+	http.HandleFunc("/api/relay", relayHandler)
 	http.HandleFunc("/api/download/", downloadHandler)
 
 	port := os.Getenv("PORT")

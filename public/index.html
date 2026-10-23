@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fileShare</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3">
-    <link rel="shortcut icon" href="/favicon.ico?v=3">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=3">
-    <link rel="stylesheet" href="/style.css?v=2">
-    <!-- Local or CDN QRCode library -->
+    <title>fileShare - Ephemeral File Sharing</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=4">
+    <link rel="shortcut icon" href="/favicon.ico?v=4">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=4">
+    <link rel="stylesheet" href="/style.css?v=3">
+    <!-- QR Code Library -->
     <script src="/qrcode.min.js"></script>
     <script>
-        // Fallback to CDN if local copy failed to load
         if (typeof QRCode === 'undefined') {
             document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>');
         }
@@ -20,9 +19,9 @@
 <body>
 
     <div class="container">
-        <!-- Logo Header -->
+        <!-- Logo & Header -->
         <div class="logo-header">
-            <svg class="logo-icon" width="42" height="42" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+            <svg class="logo-icon" width="40" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
                 <defs>
                     <linearGradient id="headerOrangeGrad" x1="0" y1="0" x2="1" y2="1">
                         <stop offset="0%" stop-color="#ea580c"/>
@@ -36,48 +35,41 @@
             </svg>
             <h1>fileShare</h1>
         </div>
-        <p class="subtitle">Quick file sharing between your computer and phone</p>
+        <p class="subtitle">Fast, ephemeral file sharing between laptops & phones</p>
 
-        <!-- Instructions Box -->
-        <div class="instructions-box">
-            <strong>How to use:</strong>
-            <ol>
-                <li><strong>Receive a file:</strong> Scan the QR code under "Receive File" with your phone camera, then choose and upload from your phone. Click "Download File" when it appears to save to this computer.</li>
-                <li><strong>Send a file:</strong> Drag & drop any file or aim and take the shot into the basketball hoop! Scan the generated QR code on your phone to download it.</li>
-                <li><strong>Auto-delete:</strong> Files are automatically deleted from the server immediately after download or after 5 minutes.</li>
-            </ol>
+        <!-- Mode Switcher: Send or Receive (Zero UI Clutter) -->
+        <div class="mode-switcher" id="mainModeSwitcher">
+            <button type="button" class="mode-tab active" id="tabSend" onclick="switchAppMode('send')">
+                <span>📤</span> Send File
+            </button>
+            <button type="button" class="mode-tab" id="tabReceive" onclick="switchAppMode('receive')">
+                <span>📥</span> Receive File
+            </button>
         </div>
 
-        <!-- Desktop View (Side by side cards) -->
-        <div id="desktop-view" class="grid">
+        <!-- ==================================================================
+             VIEW 1: SEND FILE (Basketball Hoop Uploader)
+             ================================================================== -->
+        <div id="viewSend" class="main-card">
             
-            <!-- Left Card: Receive File (Phone to PC) -->
-            <div class="card card-receive">
-                <h2>Receive File</h2>
-                <p>Scan with your phone camera to send a file to this computer</p>
-                <div id="receive-qr" class="qr-box"></div>
-                <div id="receive-status" class="status">Waiting for phone upload...</div>
+            <!-- Component Header -->
+            <div class="uploader-header">
+                <div class="uploader-title-group">
+                    <h2>Upload files</h2>
+                    <p>Drag and drop, or take the shot.</p>
+                </div>
+                <!-- Scoreboard Badge -->
+                <div class="scoreboard-badge" id="scoreboardBadge">
+                    Uploaded <strong id="uploadCount">0</strong>
+                </div>
             </div>
 
-            <!-- Right Card: Jorge Molina Basketball Dropzone Uploader (PC to Phone) -->
-            <div class="card card-uploader">
-                
-                <!-- Component Header -->
-                <div class="uploader-header">
-                    <div class="uploader-title-group">
-                        <h2>Upload files</h2>
-                        <p>Drag and drop, or take the shot.</p>
-                    </div>
-                    <!-- Scoreboard Badge -->
-                    <div class="scoreboard-badge" id="scoreboardBadge">
-                        Uploaded <strong id="uploadCount">0</strong>
-                    </div>
-                </div>
-
+            <!-- Court & Hoop Section -->
+            <div id="courtInteractiveWrapper">
                 <!-- Dropzone Outer Box with Basketball Hoop & Court -->
                 <div class="dropzone-outer" id="dropzoneOuter">
                     
-                    <!-- Callout Label & Upload Icon -->
+                    <!-- Callout Label -->
                     <div class="dropzone-callout" id="dropzoneCallout">
                         <svg class="dropzone-callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -90,12 +82,10 @@
 
                     <!-- Basketball Hoop Stage -->
                     <div class="hoop-stage" id="hoopStage">
-                        <!-- Floating Celebration Text -->
                         <div class="swish-floating-text" id="swishText">SWISH! 🏀</div>
 
                         <!-- Backboard -->
                         <div class="backboard" id="backboard">
-                            <!-- Inner Orange Target Square -->
                             <div class="backboard-target"></div>
                         </div>
 
@@ -110,10 +100,7 @@
                         <!-- Net with Diamond Mesh SVG -->
                         <div class="net-container" id="netContainer">
                             <svg class="net-svg" viewBox="0 0 80 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <!-- Top Rim Ring connection -->
                                 <ellipse cx="40" cy="5" rx="36" ry="4" stroke="#c2410c" stroke-width="2.5" fill="none"/>
-                                
-                                <!-- Net mesh cords (left-to-right diagonals) -->
                                 <path d="M 8 5 Q 16 35 22 65" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" fill="none"/>
                                 <path d="M 20 5 Q 26 35 30 65" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" fill="none"/>
                                 <path d="M 32 5 Q 36 35 38 65" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" fill="none"/>
@@ -121,7 +108,6 @@
                                 <path d="M 60 5 Q 54 35 50 65" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" fill="none"/>
                                 <path d="M 72 5 Q 64 35 58 65" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" fill="none"/>
 
-                                <!-- Net mesh cords (right-to-left diagonals) -->
                                 <path d="M 72 5 Q 64 35 22 65" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" fill="none"/>
                                 <path d="M 60 5 Q 52 35 24 65" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" fill="none"/>
                                 <path d="M 48 5 Q 40 35 26 65" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" fill="none"/>
@@ -129,10 +115,8 @@
                                 <path d="M 20 5 Q 28 35 56 65" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" fill="none"/>
                                 <path d="M 8 5 Q 16 35 58 65" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" fill="none"/>
 
-                                <!-- Horizontal Rings around Net -->
                                 <ellipse cx="40" cy="22" rx="27" ry="3.5" stroke="#94a3b8" stroke-width="1.3" fill="none"/>
                                 <ellipse cx="40" cy="42" rx="22" ry="3" stroke="#94a3b8" stroke-width="1.3" fill="none"/>
-                                <!-- Bottom ring -->
                                 <ellipse cx="40" cy="65" rx="18" ry="2.5" stroke="#cbd5e1" stroke-width="1.8" fill="none"/>
                             </svg>
                         </div>
@@ -140,10 +124,7 @@
 
                     <!-- Court Stage (Shooting Area) -->
                     <div class="court-stage" id="courtStage">
-                        <!-- Trajectory Aim Canvas -->
                         <canvas class="trajectory-canvas" id="trajectoryCanvas"></canvas>
-
-                        <!-- Confetti Celebration Canvas -->
                         <canvas class="confetti-canvas" id="confettiCanvas"></canvas>
 
                         <!-- Draggable File Item -->
@@ -159,68 +140,166 @@
                             <div class="draggable-file-label" id="fileCardName">final_final_v7.pdf</div>
                         </div>
                     </div>
-
                 </div>
 
-                <!-- Court Action Bar & Controls -->
+                <!-- Court Action Controls -->
                 <div class="court-actions">
-                    <div class="court-actions-left">
-                        <label for="pcFileInput" class="custom-file-btn btn-court" style="margin-top: 0;">Choose File</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <label for="pcFileInput" class="custom-file-btn btn-court">Choose File</label>
                         <input type="file" id="pcFileInput" class="hidden">
                         <button type="button" class="btn-primary btn-court" id="btnShoot">Shoot! 🏀</button>
                     </div>
-                    <div class="court-actions-right">
+                    <div>
                         <button type="button" class="sound-toggle-btn active" id="btnSoundToggle" title="Toggle audio effects">🔊 Sound</button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Hidden file text for accessibility -->
-                <div id="pcFileName" class="file-chosen-text hidden">No file chosen</div>
+            <!-- Upload Progress Status -->
+            <div id="sendStatus" class="status-box hidden" style="margin-top: 14px;"></div>
 
-                <!-- Upload Status / Generating QR Result -->
-                <div id="send-status" class="status hidden"></div>
+            <!-- ==============================================================
+                 TRANSFER READY CARD (Generated PIN + QR Code + 3-Way Guide)
+                 ============================================================== -->
+            <div id="transferReadyCard" class="transfer-ready-card hidden">
+                <div class="transfer-ready-title">🎉 File Ready to Share!</div>
+                <div class="transfer-file-tag" id="transferFileName">final_final_v7.pdf</div>
 
-                <!-- Download QR Code Result Card (Appears after successful shot or upload) -->
-                <div id="send-result-panel" class="upload-result-panel hidden">
-                    <div class="upload-result-title">🎉 File Uploaded!</div>
-                    <div class="upload-result-sub" id="send-pin-label">Scan with your phone to download (PIN: <strong>XXXX</strong>)</div>
-                    <div id="send-qr" class="qr-box"></div>
-                    <div class="upload-result-actions">
-                        <button type="button" class="btn-secondary" id="btnShootAnother">🏀 Shoot Another File</button>
-                        <button type="button" class="btn-primary" id="btnCopyDownloadLink">📋 Copy Link</button>
+                <!-- Big 4-Character PIN Box -->
+                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Transfer PIN</div>
+                <div class="pin-display-group" id="pinDisplayBoxes">
+                    <div class="pin-char-box">-</div>
+                    <div class="pin-char-box">-</div>
+                    <div class="pin-char-box">-</div>
+                    <div class="pin-char-box">-</div>
+                </div>
+
+                <!-- QR Code Box -->
+                <div id="sendQrCode" class="qr-box"></div>
+
+                <!-- Concise 3-Way Transfer Instructions -->
+                <div class="transfer-guide-box">
+                    <div style="margin-bottom: 6px;"><strong>📱 To a Phone:</strong> Scan the QR code above with your camera.</div>
+                    <div style="margin-bottom: 6px;"><strong>💻 To another Laptop (Option 1):</strong> Open <em>Receive</em> on that laptop & enter the 4-digit PIN.</div>
+                    <div><strong>🌉 To another Laptop (Option 2):</strong> Scan this QR with your phone, then tap <em>Beam to Laptop</em>!</div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="transfer-actions-row">
+                    <button type="button" class="btn-secondary" id="btnCopyPin">📋 Copy PIN</button>
+                    <button type="button" class="btn-secondary" id="btnCopyLink">🔗 Copy Link</button>
+                    <button type="button" class="btn-primary" id="btnShootAnother">🏀 Shoot Another File</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==================================================================
+             VIEW 2: RECEIVE FILE (Direct PIN Input or Phone Bridge Relay)
+             ================================================================== -->
+        <div id="viewReceive" class="main-card hidden">
+            <div class="receive-section">
+                
+                <div class="receive-header">
+                    <h2>Receive a File</h2>
+                    <p>Get a file sent from any laptop, phone, or tablet</p>
+                </div>
+
+                <!-- Method 1: Enter 4-Digit PIN directly -->
+                <div style="font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;">Enter the 4-Character PIN from the sender:</div>
+                <div class="pin-input-row">
+                    <input type="text" id="receivePinInput" class="pin-input" maxlength="4" placeholder="PIN" autocomplete="off" spellcheck="false">
+                    <button type="button" class="btn-primary" id="btnDownloadByPin" style="padding: 12px 22px;">Download 📥</button>
+                </div>
+                <div id="receivePinStatus" class="status-box hidden" style="margin-top: -12px; margin-bottom: 14px;"></div>
+
+                <!-- Divider: OR -->
+                <div class="divider-or">
+                    <span>OR Use Phone as a Wireless Bridge</span>
+                </div>
+
+                <!-- Method 2: Phone Bridge Relay (Hands-Free for Laptop B) -->
+                <div class="phone-bridge-box">
+                    <div class="bridge-title">🌉 Phone Bridge Relay</div>
+                    <div class="bridge-sub">
+                        Scanned the file on your phone from Laptop A? Beam it directly to this screen!
+                    </div>
+
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">This Screen's Bridge Code:</div>
+                    <div class="bridge-code-badge" id="screenBridgePinBadge">
+                        <span>📡</span> <strong id="screenBridgePinText">----</strong>
+                    </div>
+
+                    <!-- Receive QR Code for Phone to scan -->
+                    <div id="screenReceiveQr" class="qr-box"></div>
+
+                    <div class="bridge-status-text">
+                        <span class="pulse-dot"></span>
+                        <span id="bridgeLiveStatus">Listening for phone upload or beam...</span>
+                    </div>
+
+                    <div id="bridgeDownloadAction" class="hidden" style="margin-top: 12px;">
+                        <button type="button" class="btn-primary" id="btnBridgeDownload">Download File</button>
                     </div>
                 </div>
 
             </div>
-
         </div>
 
-        <!-- Mobile Upload View (Shown only when scanned ?action=upload&pin=XXXX) -->
-        <div id="mobile-upload-view" class="card mobile-view-card hidden">
-            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Upload to Computer</h2>
-            <p id="mobile-pin-label" style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px;"></p>
-            
-            <div class="file-upload-wrapper">
-                <label for="mobileFileInput" class="custom-file-btn">Choose File</label>
-                <input type="file" id="mobileFileInput" class="hidden">
-                <span id="mobileFileName" class="file-chosen-text">No file chosen</span>
+        <!-- ==================================================================
+             VIEW 3: MOBILE DOWNLOAD / BRIDGE HUB (When Scanned from QR)
+             ================================================================== -->
+        <div id="viewMobileHub" class="mobile-hub-card hidden">
+            <div class="mobile-file-banner">
+                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">File Ready</div>
+                <div class="mobile-file-title" id="mobileFileName">Loading file...</div>
+                <div style="font-size: 12px; color: var(--primary-dark); font-weight: 600;" id="mobilePinTag">PIN: ----</div>
             </div>
 
-            <button onclick="uploadFromMobile()" style="width: 100%; max-width: 240px; margin-top: 14px;">Upload File</button>
-            <div id="mobile-status" class="status hidden" style="margin-top: 14px;"></div>
+            <!-- Choice 1: Download to this Phone -->
+            <div class="mobile-action-card">
+                <h3><span>📱</span> Download to this Phone</h3>
+                <p>Save the file directly onto this mobile device.</p>
+                <button type="button" class="btn-primary" id="btnMobileDownload" style="width: 100%;">Download to Phone</button>
+            </div>
+
+            <!-- Choice 2: Bridge to Laptop B (The Phone Wand!) -->
+            <div class="mobile-action-card">
+                <h3><span>💻</span> Beam to Another Laptop</h3>
+                <p>Forward this file to another computer screen without typing long links.</p>
+                
+                <div style="margin-bottom: 8px; font-size: 12.5px; font-weight: 600; color: var(--text-dark);">
+                    Enter the 4-digit Bridge Code shown on Laptop B:
+                </div>
+                
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="text" id="relayTargetPinInput" class="pin-input" maxlength="4" placeholder="CODE" style="height: 42px; font-size: 20px; width: 140px;">
+                    <button type="button" class="btn-primary" id="btnRelayToLaptop" style="flex: 1; padding: 10px 14px;">🚀 Beam File</button>
+                </div>
+                <div id="relayStatus" class="status-box hidden" style="margin-top: 10px;"></div>
+            </div>
         </div>
 
-        <!-- Mobile Download View (Shown when opening ?action=download&pin=XXXX) -->
-        <div id="mobile-download-view" class="card mobile-view-card hidden">
-            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Download File</h2>
-            <p id="download-pin-label" style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px;"></p>
-            <div id="download-status" class="status" style="margin-bottom: 14px; width: 100%;">File ready for download</div>
-            <button id="btn-download-action" onclick="downloadFromLink()" style="width: 100%; max-width: 240px;">Download File</button>
+        <!-- ==================================================================
+             VIEW 4: MOBILE UPLOAD (When Phone Scanned Laptop B to Upload)
+             ================================================================== -->
+        <div id="viewMobileUpload" class="mobile-hub-card hidden">
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Upload to Computer</h2>
+            <p id="mobileUploadPinLabel" style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px;"></p>
+            
+            <div style="margin-bottom: 14px;">
+                <label for="mobileDirectFileInput" class="custom-file-btn" style="width: 100%; text-align: center;">Choose File</label>
+                <input type="file" id="mobileDirectFileInput" class="hidden">
+                <div id="mobileChosenFileName" style="margin-top: 8px; font-size: 13px; color: var(--text-muted);">No file chosen</div>
+            </div>
+
+            <button type="button" class="btn-primary" id="btnMobileDirectUpload" style="width: 100%;">Upload File</button>
+            <div id="mobileDirectStatus" class="status-box hidden"></div>
         </div>
 
     </div>
 
     <!-- Application Script -->
-    <script src="/app.js?v=2"></script>
+    <script src="/app.js?v=3"></script>
 </body>
 </html>
